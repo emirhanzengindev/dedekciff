@@ -2,8 +2,25 @@ import { supabase } from "./supabase";
 
 const baseUrl = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:4000";
 
+export const DEFAULT_CASE_ID = "case-001";
+
+export interface CaseSummaryDto {
+  caseId: string;
+  title: string;
+  contentWarnings: string[];
+}
+
+export interface CaseDetailDto extends CaseSummaryDto {
+  initialLocationIds: string[];
+  suspectCharacterId: string;
+}
+
 export interface SessionDto {
   id: string;
+  caseId: string;
+  caseTitle: string;
+  suspectCharacterId: string;
+  contentWarnings: string[];
   unlockedEvidenceIds: string[];
   evidenceCount: number;
   completedInterviews: Array<{ characterId: string; topic?: string }>;
@@ -12,10 +29,18 @@ export interface SessionDto {
   interrogations: Array<{ characterId: string; startedAt: string; questionTopics: string[] }>;
 }
 
-export async function createSession(): Promise<SessionDto> {
+export async function listCases(): Promise<CaseSummaryDto[]> {
+  return request("/api/cases");
+}
+
+export async function getCase(caseId: string): Promise<CaseDetailDto> {
+  return request(`/api/cases/${encodeURIComponent(caseId)}`);
+}
+
+export async function createSession(caseId: string = DEFAULT_CASE_ID): Promise<SessionDto> {
   return request("/api/sessions", {
     method: "POST",
-    body: JSON.stringify({ caseId: "case-001" })
+    body: JSON.stringify({ caseId })
   });
 }
 

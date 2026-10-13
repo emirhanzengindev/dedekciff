@@ -15,10 +15,14 @@ import {
   getSession,
   getCaseStrength,
   getEvidence,
+  listCases,
   sendInteraction,
   submitProsecution,
+  DEFAULT_CASE_ID,
+  type CaseSummaryDto,
   type SessionDto
 } from "../src/services/api";
+import { getCaseProfile, type ActionContext, type ActionSpec, type CaseProfile } from "../src/services/caseProfiles";
 import { useSessionStore } from "../src/stores/sessionStore";
 import { supabase } from "../src/services/supabase";
 import { colors } from "../src/theme/colors";
@@ -30,33 +34,16 @@ type WorkspaceTab = "map" | "investigation" | "forensics" | "prosecution";
 type InteractionPayload = { type: string; locationId?: string; characterId?: string };
 type ConversationLine = { characterId: string; role: "player" | "character"; text: string; evidenceIds?: string[] };
 
-const evidenceNames: Record<string, string> = {
-  E02: "Gösteri alanı inceleme notu",
-  E03: "Nesne inceleme raporu",
-  E04: "Gösteriyi düzenleyen kişiyle bağlantı",
-  E05: "Leyla’nın ayrıntılı ödeme beyanı",
-  E06: "İkinci mağdur şikâyeti",
-  E07: "Kurgusal mesaj çıktısı",
-  E08: "Mağdur anlatımları karşılaştırması",
-  E09: "Şüpheli görüşmesi tutanağı",
-  E10: "Ödeme iddiası çapraz kontrolü"
-};
-
-const suspectTopicLabels: Record<string, string> = {
-  show_details: "Gösterideki rolü",
-  payment_details: "Ödeme iddiası",
-  who_invited: "Çağrı ve bağlantı"
-};
-
 export default function InvestigationScreen() {
   const queryClient = useQueryClient();
   const { sessionId, setSessionId, clearSessionId, hasHydrated } = useSessionStore();
   const [session, setSession] = useState<SessionDto | undefined>();
   const [authSession, setAuthSession] = useState<SupabaseSession | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [activeCharacterId, setActiveCharacterId] = useState("C01");
+  const [selectedCaseId, setSelectedCaseId] = useState<string | undefined>();
+  const [activeCharacterId, setActiveCharacterId] = useState<string>("");
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("map");
-  const [selectedLocationId, setSelectedLocationId] = useState("police_station");
+  const [selectedLocationId, setSelectedLocationId] = useState<string>("");
   const [feedback, setFeedback] = useState<string>();
   const [conversation, setConversation] = useState<ConversationLine[]>([]);
   const [clockMs, setClockMs] = useState(Date.now());
@@ -67,14 +54,25 @@ export default function InvestigationScreen() {
     defaultValues: { question: "" }
   });
 
+  const availableCasesQuery = useQuery({
+    queryKey: ["cases"],
+    queryFn: listCases,
+    enabled: !session
+  });
+
+  const profile: CaseProfile = getCaseProfile(session?.caseId ?? selectedCaseId ?? DEFAULT_CASE_ID);
+
   const startMutation = useMutation({
-    mutationFn: createSession,
+    mutationFn: (caseId: string) => createSession(caseId),
     onSuccess: (created) => {
       setSessionId(created.id);
       setSession(created);
       setActiveTab("map");
-      setSelectedLocationId(created.locations[0]?.id ?? "police_station");
-      setFeedback("Dosya açıldı. İlk tutanak ve erişilebilir konumlar incelemeye hazır.");
+      setSelectedLocationId(created.locations[0]?.id ?? "");
+      setActiveCharacterId(created.characters[0]?.id ?? "");
+      setConversation([]);
+      setProsecutionResult(undefined);
+      setFeedback(getCaseProfile(created.caseId).startFeedback);
     },
     onError: (error) => setFeedback(toTurkishError(error))
   });
@@ -85,7 +83,7 @@ export default function InvestigationScreen() {
       setSession(result.session);
       if (payload.type === "visit_location" && payload.locationId) setSelectedLocationId(payload.locationId);
       const newLocations = result.session.locations.filter((location) => !previousLocationIds.has(location.id));
-      const unlocked = result.newlyUnlockedEvidenceIds.map((id) => evidenceNames[id] ?? id);
+      const unlocked = result.newlyUnlockedEvidenceIds.map((id) => profile.evidenceNames[id] ?? id);
       const details = [
         unlocked.length ? `Yeni delil: ${unlocked.join(", ")}.` : "",
         newLocations.length ? `Haritada yeni konum: ${newLocations.map((location) => location.name).join(", ")}.` : ""
@@ -106,7 +104,7 @@ export default function InvestigationScreen() {
         { characterId: payload.characterId, role: "player", text: payload.question },
         { characterId: payload.characterId, role: "character", text: result.answer, evidenceIds: result.supportingEvidenceIds }
       ]);
-      const opened = result.newlyUnlockedEvidenceIds.map((id) => evidenceNames[id] ?? id);
+      const opened = result.newlyUnlockedEvidenceIds.map((id) => profile.evidenceNames[id] ?? id);
       setFeedback(opened.length ? `Görüşme kaydedildi. Yeni delil: ${opened.join(", ")}.` : "Görüşme yanıtı kaydedildi.");
       questionForm.reset();
       void queryClient.invalidateQueries({ queryKey: ["evidence", sessionId] });
@@ -117,11 +115,11 @@ export default function InvestigationScreen() {
   const prosecutionMutation = useMutation({
     mutationFn: () =>
       submitProsecution(sessionId ?? "", {
-        suspectId: "C02",
-        crimeSummary: "Kurgusal gösteri ve ödeme iddiası, erişilmiş delillerle birlikte sunulur.",
+        suspectId: session?.suspectCharacterId || profile.prosecutionDefaults.suspectId,
+        crimeSummary: profile.prosecutionDefaults.crimeSummary,
         evidenceIds: session?.unlockedEvidenceIds ?? [],
-        contradictionAnalysis: "Ödeme iddiasının bağımsız doğrulama sınırı açıkça belirtilir.",
-        gaps: "Gerçek banka transferi yoktur; dosya bunu kesin suçluluk gibi sunmaz."
+        contradictionAnalysis: profile.prosecutionDefaults.contradictionAnalysis,
+        gaps: profile.prosecutionDefaults.gaps
       }),
     onSuccess: (result) => {
       setProsecutionResult(result);
@@ -192,24 +190,42 @@ export default function InvestigationScreen() {
     () => session?.characters.find((character) => character.id === activeCharacterId) ?? session?.characters[0],
     [activeCharacterId, session?.characters]
   );
-  const suspectInterrogation = session?.interrogations.find((interrogation) => interrogation.characterId === "C02");
-  const hasWitnessCorroboration = session?.completedInterviews.some((interview) => interview.characterId === "C03" && interview.topic === "who_arranged_show") ?? false;
-  const suspectTopics = new Set((suspectInterrogation?.questionTopics ?? []).filter((topic) => topic in suspectTopicLabels));
-  const suspectAvailable = session?.characters.some((character) => character.id === "C02") ?? false;
+  const suspectCharacterId = session?.suspectCharacterId || profile.suspect.characterId;
+  const suspectInterrogation = session?.interrogations.find((interrogation) => interrogation.characterId === suspectCharacterId);
+  const hasWitnessCorroboration = profile.suspect.corroboration
+    ? session?.completedInterviews.some(
+        (interview) => interview.characterId === profile.suspect.corroboration?.characterId && interview.topic === profile.suspect.corroboration?.topic
+      ) ?? false
+    : false;
+  const suspectTopics = new Set((suspectInterrogation?.questionTopics ?? []).filter((topic) => topic in profile.suspectTopicLabels));
+  const suspectAvailable = session?.characters.some((character) => character.id === suspectCharacterId) ?? false;
+  const suspectTargetMs = profile.suspect.targetMinutes * 60_000;
   const suspectTimeRemainingMs = suspectInterrogation
-    ? Math.max(0, 120_000 - (clockMs - Date.parse(suspectInterrogation.startedAt)))
-    : 120_000;
-  const suspectInterviewDone = session?.unlockedEvidenceIds.includes("E09") ?? false;
+    ? Math.max(0, suspectTargetMs - (clockMs - Date.parse(suspectInterrogation.startedAt)))
+    : suspectTargetMs;
+  const suspectInterviewDone = Boolean(profile.suspect.doneEvidenceId) && (session?.unlockedEvidenceIds.includes(profile.suspect.doneEvidenceId) ?? false);
   const suspectCanFinish = Boolean(
     suspectInterrogation &&
-    suspectTopics.size >= 2 &&
-    (session?.unlockedEvidenceIds.includes("E07") ?? false) &&
-    (session?.unlockedEvidenceIds.includes("E08") ?? false) &&
+    suspectTopics.size >= profile.suspect.minimumTopics &&
+    profile.suspect.finishEvidenceIds.every((id) => session?.unlockedEvidenceIds.includes(id)) &&
     !suspectInterviewDone
   );
   const selectedLocation = session?.locations.find((location) => location.id === selectedLocationId) ?? session?.locations[0];
   const unlockedEvidence = new Set(session?.unlockedEvidenceIds ?? []);
   const hasEvidence = (evidenceId: string) => unlockedEvidence.has(evidenceId);
+
+  const actionContext: ActionContext = {
+    hasEvidence,
+    suspectInterrogation,
+    suspectInterviewDone,
+    suspectCanFinish,
+    suspectAvailable,
+    suspectTopicCount: suspectTopics.size,
+    timeRemainingLabel: formatDuration(suspectTimeRemainingMs),
+    busy: interactionMutation.isPending
+  };
+  const resolveDetail = (detail: ActionSpec["detail"]) => (typeof detail === "function" ? detail(actionContext) : detail);
+  const isDisabled = (spec: ActionSpec) => spec.disabled?.(actionContext) ?? false;
 
   if (!authReady || !hasHydrated) {
     return (
@@ -229,7 +245,7 @@ export default function InvestigationScreen() {
               <Text style={styles.sectionTitle}>Kayıtlı dosya açılamadı</Text>
               <Text style={styles.muted}>{toTurkishError(savedSessionQuery.error)}</Text>
               <ActionButton icon="refresh" title="Yeniden dene" onPress={() => void savedSessionQuery.refetch()} />
-              <ActionButton icon="folder-plus" title="Yeni dosya başlat" onPress={() => { clearSessionId(); setSession(undefined); }} />
+              <ActionButton icon="folder-plus" title="Yeni dosya başlat" onPress={() => { clearSessionId(); setSession(undefined); setSelectedCaseId(undefined); setProsecutionResult(undefined); }} />
             </>
           ) : <Text style={styles.muted}>Kayıtlı dosya açılıyor...</Text>}
         </View>
@@ -243,31 +259,48 @@ export default function InvestigationScreen() {
         <ScrollView contentContainerStyle={styles.briefingScreen}>
           <View style={styles.header}>
             <View>
-              <Text style={styles.eyebrow}>DOSYA 001 / İLK İNCELEME</Text>
-              <Text style={styles.title}>Çil Çil Altınlar</Text>
+              <Text style={styles.eyebrow}>{profile.eyebrow}</Text>
+              <Text style={styles.title}>{profile.title}</Text>
             </View>
             {supabase && authSession ? <SignOutButton onPress={() => { void supabase?.auth.signOut(); clearSessionId(); }} /> : null}
           </View>
 
-          <View style={styles.briefingLead}>
-            <MaterialCommunityIcons name="folder-search" color={colors.accent} size={25} />
-            <Text style={styles.briefingLabel}>BAŞLANGIÇ TUTANAĞI</Text>
-            <Text style={styles.briefingText}>
-              İlk dosya kaydı, altın vaadi içeren bir gösteriye katıldığını ve ödeme yaptıktan sonra vaat edilen altını alamadığını bildiren Leyla Karaca’nın şikâyetidir. Bu, henüz doğrulanmamış bir iddiadır.
-            </Text>
+          <SectionHeading title="Vaka seçimi" detail="Sunucuda yüklü vaka paketlerinden birini seç." />
+          <View style={styles.actionList}>
+            {(availableCasesQuery.data ?? []).map((entry: CaseSummaryDto) => {
+              const isActive = (selectedCaseId ?? DEFAULT_CASE_ID) === entry.caseId;
+              return (
+                <Pressable
+                  key={entry.caseId}
+                  testID={`select-${entry.caseId}`}
+                  accessibilityRole="button"
+                  onPress={() => setSelectedCaseId(entry.caseId)}
+                  style={[styles.characterChoice, isActive && styles.characterChoiceActive]}
+                >
+                  <Text style={[styles.characterChoiceText, isActive && styles.characterChoiceTextActive]}>{entry.title}</Text>
+                </Pressable>
+              );
+            })}
           </View>
 
-          <Text style={styles.sectionTitle}>Dosyadaki ilk beyanlar</Text>
-          <StatementCard name="Leyla Karaca · şikâyetçi" text="Bir tanıdık aracılığıyla altın bulunduğu söylenen bir gösteriye çağrıldım. Gösteriden sonra para verdiğimi ve vaat edilen altının teslim edilmediğini bildiriyorum." />
-          <StatementCard name="Nermin Aksoy · ikinci şikâyet özeti" text="Benzer bir altın vaadiyle para verdiğimi bildiriyorum." note="Ayrıntılı görüşme, ilgili şikâyet kaydı araştırmada açıldığında yapılabilir." />
+          <View style={styles.briefingLead}>
+            <MaterialCommunityIcons name="folder-search" color={colors.accent} size={25} />
+            <Text style={styles.briefingLabel}>{profile.briefingLabel}</Text>
+            <Text style={styles.briefingText}>{profile.briefingText}</Text>
+          </View>
+
+          {profile.statements.length ? <Text style={styles.sectionTitle}>Dosyadaki ilk beyanlar</Text> : null}
+          {profile.statements.map((statement, index) => (
+            <StatementCard key={`${statement.name}-${index}`} name={statement.name} text={statement.text} note={statement.note} />
+          ))}
 
           <View style={styles.disclaimer}>
             <MaterialCommunityIcons name="information-outline" color={colors.muted} size={18} />
-            <Text style={styles.disclaimerText}>Oyun içindeki kişiler, olaylar ve deliller kurgusaldır. Şikâyet beyanı tek başına kanıt veya suçluluk sonucu değildir.</Text>
+            <Text style={styles.disclaimerText}>{profile.disclaimer}</Text>
           </View>
 
           {feedback ? <FeedbackBanner text={feedback} onDismiss={() => setFeedback(undefined)} /> : null}
-          <Pressable testID="start-case" accessibilityRole="button" disabled={startMutation.isPending} style={[styles.startButton, startMutation.isPending && styles.disabled]} onPress={() => startMutation.mutate()}>
+          <Pressable testID="start-case" accessibilityRole="button" disabled={startMutation.isPending} style={[styles.startButton, startMutation.isPending && styles.disabled]} onPress={() => startMutation.mutate(selectedCaseId ?? DEFAULT_CASE_ID)}>
             <MaterialCommunityIcons name="folder-open" color={colors.background} size={20} />
             <Text style={styles.startButtonText}>{startMutation.isPending ? "Dosya hazırlanıyor..." : "Dosyayı al ve haritayı aç"}</Text>
           </Pressable>
@@ -288,8 +321,8 @@ export default function InvestigationScreen() {
       <View style={styles.workspace}>
         <View style={styles.workspaceHeader}>
           <View style={styles.headerTitleBlock}>
-            <Text style={styles.eyebrow}>CASE-001 / SORUŞTURMA</Text>
-            <Text numberOfLines={1} style={styles.workspaceTitle}>Çil Çil Altınlar</Text>
+            <Text style={styles.eyebrow}>{profile.workspaceEyebrow}</Text>
+            <Text numberOfLines={1} style={styles.workspaceTitle}>{session.caseTitle || profile.title}</Text>
           </View>
           <View style={styles.headerActions}>
             <View style={styles.statPill}><Text style={styles.statPillText}>{session.evidenceCount} delil</Text></View>
@@ -319,7 +352,7 @@ export default function InvestigationScreen() {
           <View style={styles.mapWorkspace}>
             <View style={styles.mapHeading}>
               <View>
-                <Text style={styles.mapHeadingTitle}>Gümüştepe</Text>
+                <Text style={styles.mapHeadingTitle}>{profile.mapHeading}</Text>
                 <Text style={styles.muted}>Erişilebilir konumlar: {session.locations.length}</Text>
               </View>
               <MaterialCommunityIcons name="crosshairs-gps" color={colors.accent} size={21} />
@@ -327,7 +360,8 @@ export default function InvestigationScreen() {
             <CaseMap
               locations={session.locations}
               selectedLocationId={selectedLocation?.id}
-              onLocationPress={(locationId) => interactionMutation.mutate({ type: "visit_location", locationId })}
+              stampLabel={profile.mapStamp}
+              onLocationPress={(locationId) => setSelectedLocationId(locationId)}
             />
             {selectedLocation ? (
               <View style={styles.locationPanel}>
@@ -338,10 +372,10 @@ export default function InvestigationScreen() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Soruşturmayı ${selectedLocation.name} konumunda aç`}
-                  onPress={() => setActiveTab(selectedLocation.id === "show_room" ? "forensics" : "investigation")}
+                  onPress={() => setActiveTab(profile.forensicsLocationIds.includes(selectedLocation.id) ? "forensics" : "investigation")}
                   style={styles.locationAction}
                 >
-                  <MaterialCommunityIcons name={selectedLocation.id === "show_room" ? "flask-outline" : "arrow-right"} size={20} color={colors.background} />
+                  <MaterialCommunityIcons name={profile.forensicsLocationIds.includes(selectedLocation.id) ? "flask-outline" : "arrow-right"} size={20} color={colors.background} />
                 </Pressable>
               </View>
             ) : null}
@@ -352,10 +386,43 @@ export default function InvestigationScreen() {
           <ScrollView contentContainerStyle={styles.areaScroll}>
             <SectionHeading title="Soruşturma" detail="Her işlem dosyaya kaydedilir; yeni deliller haritadaki erişimi etkiler." />
             <View style={styles.actionList}>
-              <ActionButton icon="account-search" title="Benzer şikâyetleri ara" detail="İkinci şikâyet kaydını ve Nermin’in görüşmesini araştır." busy={interactionMutation.isPending} onPress={() => interactionMutation.mutate({ type: "search_similar_complaints" })} />
-              <ActionButton icon="message-text-outline" title="Mesaj kayıtlarını incele" detail={hasEvidence("E05") ? "Leyla’nın ödeme beyanıyla ilişkili iletişimi kontrol et." : "Ön koşul: Leyla’nın ayrıntılı ödeme beyanı."} disabled={!hasEvidence("E05")} busy={interactionMutation.isPending} onPress={() => interactionMutation.mutate({ type: "inspect_phone_messages" })} />
-              <ActionButton icon="compare-horizontal" title="Beyanları karşılaştır" detail={hasEvidence("E06") ? "İki şikâyetteki ortak ve farklı noktaları çıkar." : "Ön koşul: benzer şikâyet kaydını aç."} disabled={!hasEvidence("E06")} busy={interactionMutation.isPending} onPress={() => interactionMutation.mutate({ type: "compare_victim_statements" })} />
-              <ActionButton icon={suspectInterviewDone ? "check-circle-outline" : "account-question-outline"} title={suspectInterviewDone ? "Sorgu tutanağı tamamlandı" : suspectInterrogation ? (suspectCanFinish ? "Sorguyu erken bitir" : "Sorgu ilerlemesi") : "Murat ile sorguyu başlat"} detail={suspectInterviewDone ? "E09 şüpheli ifade tutanağı delillere eklendi." : suspectCanFinish ? `Sorgu hazır · ${suspectTopics.size}/3 konu · 2 dakika dolmadan bitirebilirsin.` : suspectInterrogation ? `2 dk hedef · ${formatDuration(suspectTimeRemainingMs)} kaldı · ${suspectTopics.size}/3 konu. İki konu ve E07/E08 gerekli.` : suspectAvailable ? "Sorgu sunucu saatine kaydedilir; gerekli deliller açılınca erken bitirebilirsin." : "Önce C03 tanık bağlantısıyla E04’ü aç."} disabled={suspectInterviewDone || (suspectInterrogation ? !suspectCanFinish : !suspectAvailable) || interactionMutation.isPending} busy={interactionMutation.isPending} onPress={() => interactionMutation.mutate(suspectInterrogation ? { type: "interview_suspect" } : { type: "start_interview", characterId: "C02" })} />
+              {profile.investigationActions.map((spec) => (
+                <ActionButton
+                  key={spec.title}
+                  icon={spec.icon}
+                  title={spec.title}
+                  detail={resolveDetail(spec.detail)}
+                  disabled={isDisabled(spec)}
+                  busy={interactionMutation.isPending}
+                  onPress={() => interactionMutation.mutate(spec.buildAction())}
+                />
+              ))}
+              <ActionButton
+                icon={suspectInterviewDone ? "check-circle-outline" : "account-question-outline"}
+                title={
+                  suspectInterviewDone
+                    ? "Sorgu tutanağı tamamlandı"
+                    : suspectInterrogation
+                      ? suspectCanFinish
+                        ? "Sorguyu erken bitir"
+                        : "Sorgu ilerlemesi"
+                      : `${profile.suspect.displayName} ile sorguyu başlat`
+                }
+                detail={
+                  suspectInterviewDone
+                    ? `${profile.suspect.doneEvidenceId} şüpheli ifade tutanağı delillere eklendi.`
+                    : suspectCanFinish
+                      ? `Sorgu hazır · ${suspectTopics.size}/${profile.suspect.topicCount} konu · ${profile.suspect.targetMinutes} dakika dolmadan bitirebilirsin.`
+                      : suspectInterrogation
+                        ? `${profile.suspect.targetMinutes} dk hedef · ${formatDuration(suspectTimeRemainingMs)} kaldı · ${suspectTopics.size}/${profile.suspect.topicCount} konu. ${profile.suspect.finishRequirementText}`
+                        : suspectAvailable
+                          ? "Sorgu sunucu saatine kaydedilir; gerekli deliller açılınca erken bitirebilirsin."
+                          : profile.suspect.startHint
+                }
+                disabled={suspectInterviewDone || (suspectInterrogation ? !suspectCanFinish : !suspectAvailable) || interactionMutation.isPending}
+                busy={interactionMutation.isPending}
+                onPress={() => interactionMutation.mutate(suspectInterrogation ? { type: "interview_suspect" } : { type: "start_interview", characterId: suspectCharacterId })}
+              />
             </View>
 
             <SectionHeading title="Karakter görüşmesi" detail="Soru serbest metin; yanıt ve delil erişimi sunucu kurallarınca belirlenir." />
@@ -370,25 +437,27 @@ export default function InvestigationScreen() {
               <View style={styles.interviewPanel}>
                 <Text style={styles.panelTitle}>{activeCharacter.name}</Text>
                 <Text style={styles.statementText}>{activeCharacter.initialStatement}</Text>
-                {activeCharacter.id === "C02" ? (
+                {activeCharacter.id === suspectCharacterId ? (
                   <View style={styles.interrogationPanel}>
                     {!suspectInterrogation ? (
-                      <ActionButton icon="timer-outline" title="Murat sorgusunu başlat" detail="Sunucu süreyi kaydeder. İki konu ve gerekli deliller sonrası 2 dakika dolmadan da bitirebilirsin." busy={interactionMutation.isPending} onPress={() => interactionMutation.mutate({ type: "start_interview", characterId: "C02" })} />
+                      <ActionButton icon="timer-outline" title={`${profile.suspect.displayName} sorgusunu başlat`} detail={profile.suspect.panelStartDetail} busy={interactionMutation.isPending} onPress={() => interactionMutation.mutate({ type: "start_interview", characterId: suspectCharacterId })} />
                     ) : (
                       <>
                         <View style={styles.interrogationHeader}>
-                          <Text style={styles.interrogationLabel}>2 DK HEDEF · ERKEN BİTİRİLEBİLİR</Text>
+                          <Text style={styles.interrogationLabel}>{`${profile.suspect.targetMinutes} DK HEDEF · ERKEN BİTİRİLEBİLİR`}</Text>
                           <Text style={styles.interrogationTimer}>{formatDuration(suspectTimeRemainingMs)}</Text>
                         </View>
-                        {Object.entries(suspectTopicLabels).map(([topic, label]) => (
+                        {Object.entries(profile.suspectTopicLabels).map(([topic, label]) => (
                           <View key={topic} style={styles.topicProgress}>
                             <MaterialCommunityIcons name={suspectTopics.has(topic) ? "check-circle" : "circle-outline"} color={suspectTopics.has(topic) ? colors.ok : colors.muted} size={17} />
                             <Text style={styles.topicProgressText}>{label}</Text>
                           </View>
                         ))}
-                        {!hasEvidence("E07") || !hasEvidence("E08") ? <Text style={styles.interrogationHint}>Sorguyu bitirmek için E07 mesaj kaydı ve E08 beyan karşılaştırması gerekli.</Text> : null}
-                        {suspectTopics.size < 2 ? <Text style={styles.interrogationHint}>En az iki farklı konu hakkında soru sor.</Text> : null}
-                        <Text style={styles.interrogationHint}>{hasWitnessCorroboration ? "Cem’in E04 beyanı dosyada. Aynı noktayı tekrar sor; Murat yalnızca bu beyanın desteklediği kısmı kabul edebilir." : "Başka bir karakterden aynı konuyla ilgili ifade al; tekrar sorudaki baskı ancak bağımsız destekle anlam kazanır."}</Text>
+                        {!profile.suspect.finishEvidenceIds.every(hasEvidence) ? <Text style={styles.interrogationHint}>{profile.suspect.finishHint}</Text> : null}
+                        {suspectTopics.size < profile.suspect.minimumTopics ? <Text style={styles.interrogationHint}>{profile.suspect.topicsHint}</Text> : null}
+                        {profile.suspect.corroboration ? (
+                          <Text style={styles.interrogationHint}>{hasWitnessCorroboration ? profile.suspect.corroboration.readyText : profile.suspect.corroboration.pendingText}</Text>
+                        ) : null}
                       </>
                     )}
                   </View>
@@ -409,8 +478,8 @@ export default function InvestigationScreen() {
                       style={styles.input}
                       value={value}
                       onChangeText={onChange}
-                      editable={activeCharacter.id !== "C02" || Boolean(suspectInterrogation)}
-                      placeholder={activeCharacter.id === "C02" && !suspectInterrogation ? "Önce sorguyu başlat" : "Örn. Gösteri günü ne oldu?"}
+                      editable={activeCharacter.id !== suspectCharacterId || Boolean(suspectInterrogation)}
+                      placeholder={activeCharacter.id === suspectCharacterId && !suspectInterrogation ? "Önce sorguyu başlat" : "Örn. Olay günü ne oldu?"}
                       placeholderTextColor={colors.muted}
                       multiline
                     />
@@ -419,7 +488,7 @@ export default function InvestigationScreen() {
                 {questionForm.formState.errors.question ? <Text style={styles.errorText}>{questionForm.formState.errors.question.message}</Text> : null}
                 <Pressable
                   accessibilityRole="button"
-                  disabled={questionMutation.isPending || (activeCharacter.id === "C02" && !suspectInterrogation)}
+                  disabled={questionMutation.isPending || (activeCharacter.id === suspectCharacterId && !suspectInterrogation)}
                   style={[styles.primaryButton, questionMutation.isPending && styles.disabled]}
                   onPress={questionForm.handleSubmit((values) => questionMutation.mutate({
                     characterId: activeCharacter.id,
@@ -436,11 +505,22 @@ export default function InvestigationScreen() {
 
         {activeTab === "forensics" ? (
           <ScrollView contentContainerStyle={styles.areaScroll}>
-            <SectionHeading title="Adli Tıp ve deliller" detail="Yalnızca dosyada açılmış kurgusal deliller gösterilir." />
-            <View style={styles.actionList}>
-              <ActionButton icon="flask-outline" title="Nesne incelemesi iste" detail={hasEvidence("E02") ? "Gösteri alanı notu mevcut; kurgusal inceleme raporu istenebilir." : "Ön koşul: Leyla’yla gösteri hakkında görüş ve sahne notu."} disabled={!hasEvidence("E02")} busy={interactionMutation.isPending} onPress={() => interactionMutation.mutate({ type: "request_object_examination" })} />
-              <ActionButton icon="bank-check" title="Ödeme iddiasını çapraz kontrol et" detail={hasEvidence("E05") && hasEvidence("E07") ? "Mevcut dosyada bağımsız doğrulama sınırlarını incele." : "Ön koşul: ödeme beyanı ve mesaj incelemesi."} disabled={!hasEvidence("E05") || !hasEvidence("E07")} busy={interactionMutation.isPending} onPress={() => interactionMutation.mutate({ type: "cross_check_payment_claim" })} />
-            </View>
+            <SectionHeading title="Adli Tıp ve deliller" detail="Yalnızca dosyada açılmış deliller gösterilir." />
+            {profile.forensicsActions.length ? (
+              <View style={styles.actionList}>
+                {profile.forensicsActions.map((spec) => (
+                  <ActionButton
+                    key={spec.title}
+                    icon={spec.icon}
+                    title={spec.title}
+                    detail={resolveDetail(spec.detail)}
+                    disabled={isDisabled(spec)}
+                    busy={interactionMutation.isPending}
+                    onPress={() => interactionMutation.mutate(spec.buildAction())}
+                  />
+                ))}
+              </View>
+            ) : null}
             <SectionHeading title="Açılmış deliller" detail={evidenceQuery.data?.evidence?.length ? `${evidenceQuery.data.evidence.length} kayıt` : "Henüz delil yüklenmedi"} />
             {evidenceQuery.isError ? <ActionButton icon="refresh" title="Delilleri yeniden yükle" onPress={() => void evidenceQuery.refetch()} /> : null}
             {evidenceQuery.data?.evidence?.map((item: { id: string; name: string; facts: string[]; limitations?: string[] }) => (

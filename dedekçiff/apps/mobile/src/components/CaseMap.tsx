@@ -32,23 +32,53 @@ const icons: Record<string, keyof typeof MaterialCommunityIcons.glyphMap> = {
   bank: "bank"
 };
 
+// Additional per-case coordinates keep their locations readable without
+// relying on the case-001 grid. Unknown locations fall back to an evenly
+// spaced ring below so any future case pack still renders pins.
+const extraPositions: Record<string, MapPoint> = {
+  "LOC-investigation": { x: 195, y: 360 },
+  "LOC-home": { x: 300, y: 170 },
+  "LOC-kitchen": { x: 120, y: 250 },
+  "LOC-window": { x: 280, y: 250 },
+  "LOC-upstairs": { x: 300, y: 330 },
+  "LOC-school": { x: 110, y: 470 }
+};
+
+const defaultIcon: keyof typeof MaterialCommunityIcons.glyphMap = "map-marker";
+
+function positionFor(locationId: string, index: number, total: number): MapPoint {
+  if (positions[locationId]) return positions[locationId];
+  if (extraPositions[locationId]) return extraPositions[locationId];
+  const radius = 180;
+  const angle = (index / Math.max(1, total)) * Math.PI * 2;
+  return { x: 195 + Math.cos(angle) * radius, y: 360 + Math.sin(angle) * (radius * 0.8) };
+}
+
 export function CaseMap({
   locations,
   onLocationPress,
-  selectedLocationId
+  selectedLocationId,
+  stampLabel = "DOSYA 001"
 }: {
   locations: Location[];
   onLocationPress: (id: string) => void;
   selectedLocationId?: string;
+  stampLabel?: string;
 }) {
   const [zoom, setZoom] = useState(1);
   const viewWidth = 390 / zoom;
   const viewHeight = 720 / zoom;
   const originX = (390 - viewWidth) / 2;
   const originY = (720 - viewHeight) / 2;
-  const destination = selectedLocationId ? positions[selectedLocationId] : undefined;
-  const station = positions.police_station;
-  const routePath = destination && destination !== station
+  // The route line starts from the police station pin, but only when the case
+  // actually has that location (case-002 has no station, so no phantom route).
+  const station = locations.some((location) => location.id === "police_station")
+    ? positions.police_station
+    : undefined;
+  const destination = selectedLocationId
+    ? positionFor(selectedLocationId, Math.max(0, locations.findIndex((location) => location.id === selectedLocationId)), Math.max(1, locations.length))
+    : undefined;
+  const routePath = destination && station && destination !== station
     ? `M ${station.x} ${station.y} Q ${(station.x + destination.x) / 2 + 24} ${(station.y + destination.y) / 2} ${destination.x} ${destination.y}`
     : undefined;
 
@@ -88,8 +118,8 @@ export function CaseMap({
       </Svg>
 
       <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
-        {locations.map((location) => {
-          const point = positions[location.id] ?? { x: 195, y: 360 };
+        {locations.map((location, index) => {
+          const point = positionFor(location.id, index, locations.length);
           const selected = location.id === selectedLocationId;
           return (
             <Pressable
@@ -104,7 +134,7 @@ export function CaseMap({
               ]}
             >
               <View style={[styles.pinIcon, selected && styles.pinIconSelected]}>
-                <MaterialCommunityIcons name={icons[location.id] ?? "map-marker"} size={23} color={selected ? "#FFFFFF" : "#244F49"} />
+                <MaterialCommunityIcons name={icons[location.id] ?? defaultIcon} size={23} color={selected ? "#FFFFFF" : "#244F49"} />
               </View>
               <Text numberOfLines={2} style={[styles.pinLabel, selected && styles.pinLabelSelected]}>{location.name}</Text>
             </Pressable>
@@ -114,7 +144,7 @@ export function CaseMap({
 
       <View pointerEvents="none" style={styles.mapStamp}>
         <Text style={styles.mapStampTop}>SAHA HARİTASI</Text>
-        <Text style={styles.mapStampBottom}>DOSYA 001</Text>
+        <Text style={styles.mapStampBottom}>{stampLabel}</Text>
       </View>
       <View style={styles.mapControls}>
         <View accessibilityLabel="Kuzey yönü" style={styles.compass}>

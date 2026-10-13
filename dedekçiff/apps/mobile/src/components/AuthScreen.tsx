@@ -45,7 +45,7 @@ export function AuthScreen({ client }: { client: SupabaseClient }) {
         <View style={styles.heading}>
           <MaterialCommunityIcons name="folder-lock" color={colors.accent} size={30} />
           <View>
-            <Text style={styles.eyebrow}>CASE-001 / GÜVENLİ OTURUM</Text>
+            <Text style={styles.eyebrow}>GÜVENLİ OTURUM</Text>
             <Text style={styles.title}>Dedektif hesabı</Text>
           </View>
         </View>
