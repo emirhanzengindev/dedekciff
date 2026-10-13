@@ -1,0 +1,163 @@
+{
+  "caseId": "case-001",
+  "contentType": "fictional_gameplay_data",
+  "characters": [
+    {
+      "id": "C01",
+      "name": "Leyla Karaca",
+      "role": "complainant_victim",
+      "fictional": true,
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E01"
+        ]
+      },
+      "knows": [
+        "Kendi altın vaadiyle ilgili görüşmesi",
+        "Kendi gördüğü gösteri",
+        "Kendi ödeme iddiasının yeri, yöntemi ve yaklaşık zamanı"
+      ],
+      "doesNotKnow": [
+        "Diğer mağdurların özel görüşmeleri",
+        "Şüphelilerin kendi aralarında yaptığı ve yanında bulunmadığı konuşmalar",
+        "Bankanın veya telekom şirketinin henüz elde edilmemiş kayıtları"
+      ],
+      "initialStatement": "Bir tanıdık aracılığıyla altın bulunduğu söylenen bir gösteriye çağrıldım. Gösteriden sonra para verdiğimi ve vaat edilen altının teslim edilmediğini bildiriyorum.",
+      "truthPolicy": "Kendi gördüklerini, duyduklarını ve tahminlerini ayrı anlatır. Hatırlamadığı kesin saat veya tutarı uydurmaz.",
+      "topicAnswers": {
+        "promise": "Bana gösteri sonunda altın elde edileceği söylendi.",
+        "payment": "Ödeme ayrıntılarını yalnızca oyuncu bu konuyu sorunca ve ödeme beyanı açılınca açıklar.",
+        "otherVictims": "Başka kişilerin ne yaşadığını kendi başına doğrulayamaz."
+      },
+      "knowledgePolicy": {
+        "answerOnlyFrom": "unlocked_evidence_and_character_direct_knowledge",
+        "mustSeparateObservationFromInference": true,
+        "mayInventFacts": false,
+        "mayRevealLockedEvidence": false,
+        "mayRevealOtherCharactersPrivateKnowledge": false
+      },
+      "availableWhen": "unlockCondition is satisfied on the server; never infer availability from a client request"
+    },
+    {
+      "id": "C02",
+      "name": "Murat Sönmez",
+      "role": "primary_suspect",
+      "fictional": true,
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E04"
+        ]
+      },
+      "knows": [
+        "Kendi düzenlediği görüşmeler",
+        "Kendi eylemleri ve kendi aldığı ödemeler"
+      ],
+      "doesNotKnow": [
+        "Polisin bulmadığı deliller",
+        "Diğer kişilerin özel konuşmaları"
+      ],
+      "initialStatement": "Ben bir gösteriye katıldım; hakkımdaki anlatımın bazı kısımlarına katılmıyorum.",
+      "truthPolicy": "Diyalog yazarı tarafından tanımlanan savunma çizgisinin dışına çıkılmaz. Soruya göre yeni mazeret veya delil icat edilmez.",
+      "topicAnswers": {
+        "payment": "Kendi ödeme açıklaması E07 ile açılmadan ayrıntılı cevap verilmez.",
+        "props": "Nesnelerin ne amaçla kullanıldığına ilişkin cevap yalnızca kanonik vaka verisinde tanımlıysa verilir."
+      },
+      "knowledgePolicy": {
+        "answerOnlyFrom": "unlocked_evidence_and_character_direct_knowledge",
+        "mustSeparateObservationFromInference": true,
+        "mayInventFacts": false,
+        "mayRevealLockedEvidence": false,
+        "mayRevealOtherCharactersPrivateKnowledge": false
+      },
+      "availableWhen": "unlockCondition is satisfied on the server; never infer availability from a client request"
+    },
+    {
+      "id": "C03",
+      "name": "Cem Arslan",
+      "role": "witness",
+      "fictional": true,
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E02"
+        ]
+      },
+      "knows": [
+        "Gösteri alanında doğrudan gördüğü nesneler",
+        "Hatırladığı kişilerin mekâna giriş çıkışı"
+      ],
+      "doesNotKnow": [
+        "Ödeme kaydının banka tarafı",
+        "Şüphelilerin iç niyeti",
+        "Görmediği görüşmeler"
+      ],
+      "initialStatement": "Mekânda kaplar ve örtüler gördüm. Olayın bütününü bildiğimi söyleyemem.",
+      "truthPolicy": "Görgü tanığı yalnızca gözlemini aktarır; çıkarımını gerçek gibi sunmaz.",
+      "knowledgePolicy": {
+        "answerOnlyFrom": "unlocked_evidence_and_character_direct_knowledge",
+        "mustSeparateObservationFromInference": true,
+        "mayInventFacts": false,
+        "mayRevealLockedEvidence": false,
+        "mayRevealOtherCharactersPrivateKnowledge": false
+      },
+      "availableWhen": "unlockCondition is satisfied on the server; never infer availability from a client request"
+    },
+    {
+      "id": "C04",
+      "name": "Nermin Aksoy",
+      "role": "second_victim",
+      "fictional": true,
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E06"
+        ]
+      },
+      "knows": [
+        "Kendi katıldığı görüşme",
+        "Kendi ödeme iddiası",
+        "Kendi gördüğü gösteri"
+      ],
+      "doesNotKnow": [
+        "Leyla’nın özel konuşmalarının ayrıntıları",
+        "Murat’ın başka yerdeki faaliyetleri"
+      ],
+      "initialStatement": "Benzer bir altın vaadiyle para verdiğimi bildiriyorum.",
+      "truthPolicy": "Kendi deneyimiyle sınırlıdır. Kendisinin doğrudan bilmediği ayrıntıları doğrulamaz.",
+      "knowledgePolicy": {
+        "answerOnlyFrom": "unlocked_evidence_and_character_direct_knowledge",
+        "mustSeparateObservationFromInference": true,
+        "mayInventFacts": false,
+        "mayRevealLockedEvidence": false,
+        "mayRevealOtherCharactersPrivateKnowledge": false
+      },
+      "availableWhen": "unlockCondition is satisfied on the server; never infer availability from a client request"
+    },
+    {
+      "id": "C05",
+      "name": "Savcı Selin Demir",
+      "role": "prosecutor",
+      "fictional": true,
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "event": "prosecution_submission"
+      },
+      "knows": [
+        "Oyuncunun yazılı beyanı",
+        "Beyana eklenen ve erişim günlüğünde bulunan deliller",
+        "Açıklanmış veya çözümlenmemiş çelişkiler"
+      ],
+      "truthPolicy": "Sonucu yalnızca deterministik değerlendirme kurallarına göre açıklar.",
+      "knowledgePolicy": {
+        "answerOnlyFrom": "unlocked_evidence_and_character_direct_knowledge",
+        "mustSeparateObservationFromInference": true,
+        "mayInventFacts": false,
+        "mayRevealLockedEvidence": false,
+        "mayRevealOtherCharactersPrivateKnowledge": false
+      },
+      "availableWhen": "unlockCondition is satisfied on the server; never infer availability from a client request"
+    }
+  ]
+}

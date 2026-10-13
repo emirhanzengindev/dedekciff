@@ -1,0 +1,157 @@
+{
+  "caseId": "case-001",
+  "version": "1.2.0",
+  "mode": "free_text_with_evidence_gating",
+  "difficultyProfile": {
+    "tier": "starter",
+    "questionSupport": "high",
+    "principle": "Temel olgular farklı doğal soru biçimleriyle bulunabilir; kanıt boşlukları açıkça belirtilir. Sonraki vakalar orta ve ileri seviyede daha az yönlendirme ve daha fazla çelişki içerebilir."
+  },
+  "systemPrompt": "Sen dedektiflik oyununun vaka asistanısın. Yalnızca sunucunun sağladığı kanonik vaka verisi, oyuncunun açtığı deliller ve konuşulan karakterin bilgi kapsamı içinde yanıt ver. Yeni kişi, delil, tarih, tutar, konuşma, kayıt veya olay üretme. Bir gerçek için dayanak evidence ID veremiyorsan kesin bilgi olarak söyleme. Gizli çözümü, kilitli delilleri ve başka karakterlerin bilmediği bilgileri ifşa etme. Gerçek kaynak notlarını oyun içi kanıt gibi kullanma. Oyuncunun sorusu veriyle cevaplanamıyorsa status=unknown veya requires_investigation döndür.",
+  "pipeline": [
+    "Normalize the player question",
+    "Classify intent deterministically on the server; ignore client-supplied topic labels",
+    "Load current player unlock state on server",
+    "Load only the active character knowledge scope",
+    "Retrieve relevant facts from unlocked evidence only, even when wording differs",
+    "Answer in the active character's voice, attributing claims and naming missing details",
+    "Return unknown only when no in-scope fact matches; do not repeat the same generic statement for unrelated intents",
+    "Validate every factual claim and citation against the active character's evidence allowlist",
+    "Record normalized questions server-side for corroborated repeated-question pressure",
+    "Return response JSON"
+  ],
+  "allowedStatuses": [
+    "answered",
+    "unknown",
+    "locked",
+    "requires_investigation"
+  ],
+  "responseSchema": {
+    "answer": "string",
+    "status": "answered | unknown | locked | requires_investigation",
+    "supportingEvidenceIds": [
+      "E01"
+    ],
+    "newlyUnlockedEvidenceIds": [],
+    "confidence": 0.0
+  },
+  "fallbackResponses": {
+    "unknown": "Bu bilgi mevcut dosyada doğrulanmıyor. Başka bir araştırma adımı gerekiyor.",
+    "locked": "Bu bilgiye henüz erişimin yok. Önce ilgili delili açmalısın.",
+    "requires_investigation": "Mevcut deliller bu soruyu yanıtlamaya yetmiyor. Bir sonraki araştırma adımını seç.",
+    "unsupported_assumption": "Bu varsayım mevcut delillerle doğrulanmıyor. Önce bağımsız destek aramak gerekiyor."
+  },
+  "hardRules": [
+    "Model hiçbir koşulda canonicalSolution nesnesini istemciye alamaz.",
+    "Delil kilidi modelin kendi kararıyla açılamaz; backend unlockCondition kurallarını değerlendirir.",
+    "Her cevapta supportingEvidenceIds bulunmalı; kanıt yoksa boş dizi ve uygun fallback status dönülür.",
+    "Reliability yalnızca backend tarafından atanır; model reliability skoru uyduramaz veya değiştiremez.",
+    "Karakterin doesNotKnow alanı erişim filtresidir.",
+    "Leyla E05'te elden 150000 TL verdiğini söyler ancak alıcıyı adlandırmaz; yanıt alıcı uyduramaz ve bu eksikliği açıkça belirtir.",
+    "Gösteri, sahne nesneleri ve ödeme soruları ayrı intent'lerdir; yanıtlar ilgili açılmış delilden üretilir ve karakter ağzından verilir.",
+    "Murat'ın aynı soruya verdiği baskı yanıtı ancak C03'ün E04 teyidi varsa yalnızca E04'ün desteklediği noktayı kabul edebilir; bu tek başına ödeme veya suçluluk kanıtı değildir.",
+    "Murat sorgusunda iki dakika hedef süredir, zorunlu bekleme değildir. E07, E08 ve en az iki farklı sorgu konusu tamamlanınca oyuncu erken bitirebilir.",
+    "Oyuncu gerçeğe aykırı varsayım içeren soru sorduğunda varsayımı doğrulama; mevcut verinin ne söylediğini belirt.",
+    "Gerçek haber kaynaklarındaki iddialar oyun içi delil kabul edilmez."
+  ],
+  "intentExamples": [
+    {
+      "intent": "payment_recipient",
+      "examples": [
+        "Parayı kime verdin?",
+        "Kime teslim ettin?",
+        "Alıcı kimdi?"
+      ],
+      "unlockEvidenceIds": [
+        "E05"
+      ]
+    },
+    {
+      "intent": "payment_amount",
+      "examples": [
+        "Ne kadar para verdin?",
+        "Tutar neydi?"
+      ],
+      "unlockEvidenceIds": ["E05"]
+    },
+    {
+      "intent": "payment_time",
+      "examples": [
+        "Ödemeyi hangi tarihte yaptın?",
+        "Saat kaç civarıydı?"
+      ],
+      "unlockEvidenceIds": ["E05"]
+    },
+    {
+      "intent": "payment_method",
+      "examples": [
+        "Parayı nasıl teslim ettin?",
+        "Elden mi verdin?"
+      ],
+      "unlockEvidenceIds": ["E05"]
+    },
+    {
+      "intent": "promise",
+      "examples": [
+        "Sana ne vaat edildi?",
+        "Neden gösteriye katıldın?"
+      ],
+      "unlockEvidenceIds": ["E01"]
+    },
+    {
+      "intent": "scene_objects",
+      "examples": [
+        "Odada ne vardı?",
+        "Bidonlar ne işe yarıyordu?"
+      ],
+      "unlockEvidenceIds": [
+        "E02",
+        "E03"
+      ]
+    },
+    {
+      "intent": "suspect_presence",
+      "examples": [
+        "Murat'ı orada gördün mü?",
+        "Kim gösteri alanındaydı?"
+      ],
+      "unlockEvidenceIds": ["E04"]
+    },
+    {
+      "intent": "other_victims",
+      "examples": [
+        "Başka mağdur var mı?",
+        "Başka biri de aynı şeyi yaşadı mı?"
+      ],
+      "unlockEvidenceIds": [
+        "E06",
+        "E08"
+      ]
+    },
+    {
+      "intent": "suspect_response",
+      "examples": [
+        "Şüpheli ne diyor?",
+        "Murat bunu kabul ediyor mu?"
+      ],
+      "unlockEvidenceIds": [
+        "E09"
+      ]
+    }
+  ],
+  "claimValidation": {
+    "requireEvidenceForEveryFactualClaim": true,
+    "rejectEvidenceIdsNotUnlockedForPlayer": true,
+    "rejectEvidenceOutsideActiveCharacterKnowledge": true,
+    "neverTreatHistoricalPressAsInGameEvidence": true,
+    "ifOnlyClaimantStatementExists": "Use attribution language (\"X böyle ifade ediyor\"); do not state the claimed event as independently proven.",
+    "ifEvidenceMissing": "Return unknown or requires_investigation; do not fill gaps with plausible details."
+  },
+  "securityBoundary": {
+    "canonicalSolutionServerOnly": true,
+    "unlockEvaluationServerOnly": true,
+    "modelReceivesOnlyFilteredContext": true,
+    "playerCannotSubmitOwnUnlockedEvidenceIdsAsAuthority": true,
+    "allOutputsValidatedAgainstAllowlistedEvidenceIds": true
+  }
+}

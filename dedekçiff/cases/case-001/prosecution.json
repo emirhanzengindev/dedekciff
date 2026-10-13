@@ -1,0 +1,110 @@
+{
+  "caseId": "case-001",
+  "contentType": "fictional_gameplay_rules",
+  "availableAtAnyTime": true,
+  "submissionFields": [
+    "suspectId",
+    "crimeSummary",
+    "motive",
+    "timelineSummary",
+    "evidenceIds",
+    "contradictionExplanations"
+  ],
+  "scoring": {
+    "maxScore": 100,
+    "components": [
+      {
+        "id": "S1",
+        "name": "Şüpheli bağlantısı",
+        "max": 20,
+        "rule": "Şüpheliyi doğrudan ve güvenilir delille ilişkilendirme."
+      },
+      {
+        "id": "S2",
+        "name": "Olay yöntemi",
+        "max": 20,
+        "rule": "Gösteri düzeni ile vaat arasındaki bağı açıklama."
+      },
+      {
+        "id": "S3",
+        "name": "Ödeme iddiası",
+        "max": 20,
+        "rule": "Ödeme iddiasının kanıt sınırlarını doğru değerlendirme; doğrulanmamış ödemeyi kesin gerçek saymama."
+      },
+      {
+        "id": "S4",
+        "name": "Bağımsız destek",
+        "max": 20,
+        "rule": "Birbirinden bağımsız kaynakların desteklediği iddialar."
+      },
+      {
+        "id": "S5",
+        "name": "Çelişki analizi",
+        "max": 20,
+        "rule": "Açık çelişkileri belirtme ve açıklanmayanları dürüstçe işaretleme."
+      }
+    ]
+  },
+  "outcomes": [
+    {
+      "id": "accepted_for_further_action",
+      "minScore": 75,
+      "conditions": [
+        "En az üç erişilmiş ve başvuruda gösterilmiş dayanak delil",
+        "En az bir bağımsız destek veya açıkça gerekçelendirilmiş bağımsız doğrulama eksikliği",
+        "Önemli çelişki ve belirsizlikler açıklanmış",
+        "Yanlış veya uydurma delil kullanılmamış"
+      ],
+      "description": "Dosya daha ileri incelemeye alınır; bu sonuç suçluluğun kesinleşmesi değildir."
+    },
+    {
+      "id": "returned_for_more_evidence",
+      "minScore": 45,
+      "maxScore": 74,
+      "conditions": [
+        "Şüpheli bağlantısı makul",
+        "Önemli doğrulama veya çelişki eksikleri açıkça giderilmemiş"
+      ],
+      "description": "Ek araştırma gerekir."
+    },
+    {
+      "id": "rejected",
+      "minScore": 0,
+      "maxScore": 100,
+      "conditions": [
+        "Yanlış şüpheli",
+        "Uydurma/erişilmemiş delil sunulması",
+        "Dayanaksız kesin suçlama",
+        "45 puanın altında kalma"
+      ],
+      "description": "Başvuru bu haliyle yetersizdir."
+    }
+  ],
+  "antiShortcutRules": [
+    "Sadece doğru ismi yazmak başarı sağlamaz.",
+    "Hızlı başvuru yapılabilir ama eksik deliller puanı düşürür.",
+    "Delillerin reliability değerleri ve unlock durumu sunucu tarafından okunur.",
+    "Bu mekanik gerçek hukuk prosedürünün eksiksiz temsili değildir."
+  ],
+  "version": "1.1.0",
+  "evaluationOrder": [
+    "validate_submission",
+    "validate_player_access_to_evidence",
+    "check_wrong_suspect_or_fabricated_claims",
+    "calculate_component_scores",
+    "apply_outcome_gates"
+  ],
+  "deterministicRules": {
+    "scoreOnlyEvidenceActuallyUnlockedAndSubmitted": true,
+    "fabricatedOrRealWorldEvidenceClaim": "reject",
+    "wrongSuspect": "rejected",
+    "thresholdsAreNecessaryButNotSufficient": true,
+    "outcomePrecedence": [
+      "rejected",
+      "accepted_for_further_action",
+      "returned_for_more_evidence"
+    ],
+    "noIndependentPaymentProofPenalty": "Do not award full payment-verification points; full points may be awarded for correctly identifying and explaining the evidence gap.",
+    "submissionDoesNotEstablishGuilt": true
+  }
+}

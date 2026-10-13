@@ -1,0 +1,2 @@
+-- The seed intentionally avoids hidden canonical solution data.
+-- Case content is loaded from cases/case-001 by the backend case loader.

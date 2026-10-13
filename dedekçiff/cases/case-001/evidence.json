@@ -1,0 +1,404 @@
+{
+  "caseId": "case-001",
+  "contentType": "fictional_gameplay_data",
+  "evidence": [
+    {
+      "id": "E01",
+      "name": "İlk şikâyet kaydı",
+      "type": "complaint_document",
+      "fictional": true,
+      "locationId": "police_station",
+      "initiallyAvailable": true,
+      "unlockCondition": null,
+      "facts": [
+        "Leyla altın vaadiyle bir gösteriye katıldığını bildirir.",
+        "Leyla para verdiğini ve vaat edilen altının teslim edilmediğini iddia eder."
+      ],
+      "reliability": 0.55,
+      "independentVerification": false,
+      "unlocks": {
+        "characters": [
+          "C01"
+        ],
+        "locations": [
+          "victim_home"
+        ],
+        "evidence": [
+          "E02",
+          "E06"
+        ]
+      },
+      "limitations": [
+        "Şikâyet, tek başına iddianın doğru olduğunu kanıtlamaz."
+      ],
+      "sourceBoundary": "fictional_gameplay_only",
+      "unlockConditionServerEvaluated": true,
+      "clientMaySetUnlocked": false,
+      "proves": [
+        "Bir şikâyetin yapıldığı ve şikâyetçinin ne iddia ettiği"
+      ],
+      "doesNotProve": [
+        "İddianın doğruluğu",
+        "Failin kimliği",
+        "Ödeme teslimi"
+      ]
+    },
+    {
+      "id": "E02",
+      "name": "Gösteri alanı inceleme notu",
+      "type": "scene_observation",
+      "fictional": true,
+      "locationId": "show_room",
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "interviewCompleted": "C01",
+        "questionTopic": "show_details"
+      },
+      "facts": [
+        "Kurgusal sahnede boş kaplar ve örtüler bulunur.",
+        "Bu nesnelerin varlığı tek başına sahtekârlığı kanıtlamaz."
+      ],
+      "reliability": 0.6,
+      "independentVerification": false,
+      "unlocks": {
+        "characters": [
+          "C03"
+        ],
+        "evidence": [
+          "E03"
+        ]
+      },
+      "limitations": [
+        "Nesneler üzerinde adli inceleme sonucu bu dosyada henüz tanımlı değildir."
+      ],
+      "sourceBoundary": "fictional_gameplay_only",
+      "unlockConditionServerEvaluated": true,
+      "clientMaySetUnlocked": false,
+      "proves": [
+        "Kurgusal sahnede tarif edilen nesnelerin bulunduğu"
+      ],
+      "doesNotProve": [
+        "Nesneleri kimin yerleştirdiği",
+        "Dolandırıcılık kastı"
+      ]
+    },
+    {
+      "id": "E03",
+      "name": "Nesne inceleme raporu",
+      "type": "fictional_forensic_report",
+      "fictional": true,
+      "locationId": "show_room",
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E02"
+        ],
+        "action": "request_object_examination"
+      },
+      "facts": [
+        "Kurgusal incelemede kapların boş olduğu ve örtülerin altın varmış izlenimi yaratacak biçimde düzenlendiği raporlanır.",
+        "Bu bulgu, tek başına belirli bir kişinin dolandırıcılık niyetini veya para teslimini kanıtlamaz."
+      ],
+      "reliability": 0.8,
+      "independentVerification": true,
+      "unlocks": {
+        "evidence": [
+          "E04"
+        ]
+      },
+      "limitations": [
+        "Bu rapor tamamen oyun için yazılmıştır; gerçek vakaya veya gerçek kişilere atfedilemez."
+      ],
+      "sourceBoundary": "fictional_gameplay_only",
+      "unlockConditionServerEvaluated": true,
+      "clientMaySetUnlocked": false,
+      "proves": [
+        "Kurgusal incelemede kapların boş ve örtülerin belirli biçimde düzenlenmiş olduğu"
+      ],
+      "doesNotProve": [
+        "Para teslimi",
+        "Belirli kişinin kastı"
+      ]
+    },
+    {
+      "id": "E04",
+      "name": "Gösteriyi düzenleyen kişiyle bağlantı",
+      "type": "witness_identification",
+      "fictional": true,
+      "locationId": "show_room",
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E02"
+        ],
+        "questionTopic": "who_arranged_show"
+      },
+      "facts": [
+        "Cem, Murat’ı gösteri günü mekânda gördüğünü belirtir.",
+        "Tanık, para alışverişini doğrudan gördüğünü iddia etmez."
+      ],
+      "reliability": 0.65,
+      "independentVerification": false,
+      "unlocks": {
+        "characters": [
+          "C02"
+        ],
+        "evidence": [
+          "E05"
+        ]
+      },
+      "limitations": [
+        "Mekânda bulunmak tek başına suçun kanıtı değildir."
+      ],
+      "sourceBoundary": "fictional_gameplay_only",
+      "unlockConditionServerEvaluated": true,
+      "clientMaySetUnlocked": false,
+      "proves": [
+        "Cem’in Murat’ı mekânda gördüğüne ilişkin beyanı"
+      ],
+      "doesNotProve": [
+        "Para teslimi",
+        "Tek başına suçluluk"
+      ]
+    },
+    {
+      "id": "E05",
+      "name": "Leyla’nın ayrıntılı ödeme beyanı",
+      "type": "victim_statement",
+      "fictional": true,
+      "locationId": "police_station",
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "characterId": "C01",
+        "questionTopic": "payment_details"
+      },
+      "facts": [
+        "Leyla, kurgusal senaryoda 2026-05-12 tarihinde saat 14:30 civarında 150000 TL ödediğini söyler.",
+        "Leyla ödemenin elden yapıldığını ifade eder.",
+        "Beyan, alıcıyı veya para teslimini bağımsız olarak doğrulamaz."
+      ],
+      "reliability": 0.6,
+      "independentVerification": false,
+      "unlocks": {
+        "locations": [
+          "bank"
+        ],
+        "evidence": [
+          "E07"
+        ]
+      },
+      "limitations": [
+        "Tarih, saat ve tutar tamamen kurgusaldır; gerçek Mecit Çapar vakasına ait değildir."
+      ],
+      "sourceBoundary": "fictional_gameplay_only",
+      "unlockConditionServerEvaluated": true,
+      "clientMaySetUnlocked": false,
+      "proves": [
+        "Leyla’nın ödeme iddiasında bulunduğu"
+      ],
+      "doesNotProve": [
+        "Bağımsız ödeme doğrulaması",
+        "Kesin alıcı kimliği"
+      ]
+    },
+    {
+      "id": "E06",
+      "name": "İkinci mağdur şikâyeti",
+      "type": "complaint_document",
+      "fictional": true,
+      "locationId": "police_station",
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E01"
+        ],
+        "action": "search_similar_complaints"
+      },
+      "facts": [
+        "Nermin, farklı bir tarihte benzer altın vaadiyle para verdiğini bildirir.",
+        "Nermin’in ilk ifadesinde tutar ve kesin saat bağımsız kayıtla doğrulanmamıştır."
+      ],
+      "reliability": 0.55,
+      "independentVerification": false,
+      "unlocks": {
+        "characters": [
+          "C04"
+        ],
+        "evidence": [
+          "E08"
+        ]
+      },
+      "limitations": [
+        "Benzer anlatım, failin kimliğini tek başına kanıtlamaz."
+      ],
+      "sourceBoundary": "fictional_gameplay_only",
+      "unlockConditionServerEvaluated": true,
+      "clientMaySetUnlocked": false,
+      "proves": [
+        "Nermin’in benzer bir iddiayla şikâyette bulunduğu"
+      ],
+      "doesNotProve": [
+        "İki olayın aynı kişi tarafından yapıldığı"
+      ]
+    },
+    {
+      "id": "E07",
+      "name": "Kurgusal teslim tutanağı ve mesaj çıktısı",
+      "type": "documentary_evidence",
+      "fictional": true,
+      "locationId": "police_station",
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E05"
+        ],
+        "action": "inspect_phone_messages"
+      },
+      "facts": [
+        "Kurgusal mesaj çıktısında 2026-05-10 tarihinde gösteri hakkında iletişim ve 2026-05-12 tarihinde gösteri sonrası görüşme ayarlamaya yönelik mesajlar bulunduğu varsayılır.",
+        "Mesajlar iletişimi destekler; ödeme yapıldığını veya mesajların tek başına suç kastını kanıtlamaz."
+      ],
+      "reliability": 0.75,
+      "independentVerification": false,
+      "unlocks": {
+        "evidence": [
+          "E09"
+        ]
+      },
+      "limitations": [
+        "Mesaj içerikleri ve çıktı tamamen oyun için oluşturulmuştur. Gerçek kişi, telefon veya adli kayıtla ilişkili değildir."
+      ],
+      "sourceBoundary": "fictional_gameplay_only",
+      "unlockConditionServerEvaluated": true,
+      "clientMaySetUnlocked": false,
+      "proves": [
+        "Kurgusal taraflar arasında iletişim bulunduğu varsayımı"
+      ],
+      "doesNotProve": [
+        "Ödeme teslimi",
+        "Tek başına suç kastı"
+      ]
+    },
+    {
+      "id": "E08",
+      "name": "Mağdur anlatımları karşılaştırması",
+      "type": "statement_analysis",
+      "fictional": true,
+      "locationId": "police_station",
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E01",
+          "E06"
+        ],
+        "action": "compare_victim_statements"
+      },
+      "facts": [
+        "İki mağdur da altın vaadi ve gösteri anlatır.",
+        "İki anlatımın benzerliği ortak yönteme işaret edebilir; doğrudan fail kanıtı değildir.",
+        "Mağdurların tarih ve ödeme ayrıntıları farklıdır ve ayrı ayrı doğrulanmalıdır."
+      ],
+      "reliability": 0.65,
+      "independentVerification": false,
+      "unlocks": {
+        "evidence": [
+          "E09"
+        ]
+      },
+      "limitations": [
+        "Karşılaştırma raporu yeni olgu yaratmaz; sadece mevcut beyanları karşılaştırır."
+      ],
+      "sourceBoundary": "fictional_gameplay_only",
+      "unlockConditionServerEvaluated": true,
+      "clientMaySetUnlocked": false,
+      "proves": [
+        "İki beyan arasında benzer anlatım örüntüleri bulunduğu"
+      ],
+      "doesNotProve": [
+        "Bağımsız doğrulama",
+        "Fail kimliği"
+      ]
+    },
+    {
+      "id": "E09",
+      "name": "Şüpheli görüşmesi tutanağı",
+      "type": "suspect_statement",
+      "fictional": true,
+      "locationId": "police_station",
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E07",
+          "E08"
+        ],
+        "action": "interview_suspect"
+      },
+      "facts": [
+        "Murat gösteriyi düzenlediğini kabul eder ancak ödeme karşılığında gerçek altın teslim etme taahhüdü verdiğini reddeder.",
+        "Bu savunma, diğer delillerle birlikte değerlendirilmelidir."
+      ],
+      "reliability": 0.5,
+      "independentVerification": false,
+      "unlocks": {
+        "evidence": [
+          "E10"
+        ]
+      },
+      "limitations": [
+        "Şüphelinin inkârı tek başına suçsuzluğu veya suçluluğu kanıtlamaz."
+      ],
+      "sourceBoundary": "fictional_gameplay_only",
+      "unlockConditionServerEvaluated": true,
+      "clientMaySetUnlocked": false,
+      "proves": [
+        "Murat’ın kurgusal savunmasının ne olduğu"
+      ],
+      "doesNotProve": [
+        "Savunmanın doğru olduğu veya yanlış olduğu"
+      ]
+    },
+    {
+      "id": "E10",
+      "name": "Kurgusal ödeme bağlantısı raporu",
+      "type": "fictional_investigative_cross_check",
+      "fictional": true,
+      "locationId": "bank",
+      "initiallyAvailable": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E05",
+          "E07"
+        ],
+        "action": "cross_check_payment_claim"
+      },
+      "facts": [
+        "Kurgusal dosyada Leyla’nın elden ödeme iddiasını doğrulayan bağımsız banka transferi kaydı bulunmaz.",
+        "Mesaj kaydı iletişimi destekler ancak para teslimini bağımsız biçimde doğrulamaz.",
+        "Sonuç: ödeme iddiası mevcut veride doğrulanmamıştır; bu, ödemenin kesinlikle yapılmadığını da kanıtlamaz."
+      ],
+      "factCodes": [
+        "independent_payment_not_verified"
+      ],
+      "reliability": 0.7,
+      "independentVerification": false,
+      "unlocks": {},
+      "limitations": [
+        "Gerçek banka verisi veya gerçek banka araştırması değildir; yalnızca oyun içi veri boşluğunu temsil eder."
+      ],
+      "sourceBoundary": "fictional_gameplay_only",
+      "unlockConditionServerEvaluated": true,
+      "clientMaySetUnlocked": false,
+      "proves": [
+        "Mevcut kurgusal pakette bağımsız ödeme doğrulamasının bulunmadığı"
+      ],
+      "doesNotProve": [
+        "Ödemenin kesinlikle gerçekleşmediği",
+        "Suçluluk veya suçsuzluk"
+      ]
+    }
+  ],
+  "unlockSemantics": {
+    "unlocksFieldMeans": "Yeni araştırma adaylarını/konumları görünür kılar; listedeki her delil veya karakter otomatik olarak erişilebilir olmaz. Her hedef kendi unlockCondition alanından ayrıca geçmelidir.",
+    "finalAccessAuthority": "backend_only"
+  }
+}

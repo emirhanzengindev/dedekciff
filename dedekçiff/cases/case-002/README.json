@@ -1,0 +1,26 @@
+{
+  "caseId": "case-002",
+  "title": "Reddedilmenin Ölümcül Bedeli — Belgesel anlatımından uyarlanan soruşturma vakası",
+  "files": [
+    "README.json",
+    "source_notes.json",
+    "characters.json",
+    "evidence.json",
+    "timeline.json",
+    "question_rules.json",
+    "prosecution.json",
+    "map.json",
+    "rules.json",
+    "tests/evidence-unlocks.json",
+    "tests/character-knowledge.json",
+    "tests/timeline-consistency.json"
+  ],
+  "important": "Bu paketteki olay, bulgu, ifade ve mahkûmiyet bilgileri yalnızca sağlanan belgesel transkriptindeki anlatımın iddialarıdır; bağımsız adli dosya, laboratuvar raporu veya mahkeme kaydı değildir. Kişi ve yer adlarındaki belirsizlikler korunmuştur. Reddedilme motivasyonu, belgeselde dedektiflerin aktardığı bir teoridir.",
+  "knownLimitations": [
+    "Kişi adı (özellikle Robert Burns/Barns) ve yer adı transkriptle bağımsız doğrulanmadı; yayın öncesi güvenilir kaynakla doğrulanmalıdır.",
+    "Delil kartları, konumlar ve açılma koşulları oyunlaştırılmış temsillerdir; özgün polis dosyası, laboratuvar raporu veya gerçek belge değildir.",
+    "Hiçbir delil bağımsız doğrulama taşımaz; savcılık kabulü bu nedenle zordur ve kapsamlı boşluk/çelişki analizi gerektirir.",
+    "Mağdur (reşit olmayan) oynanabilir değildir ve sorgulanamaz; bilgi kapsamı yalnızca arka plan özeti içindir."
+  ],
+  "status": "source_adaptation_draft_not_independently_verified"
+}

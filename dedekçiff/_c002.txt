@@ -1,0 +1,636 @@
+{
+ "case_id": "case-002",
+ "schema_version": "1.0",
+ "title": "Reddedilmenin Ölümcül Bedeli",
+ "subtitle": "Megan Landowski cinayeti — belgesel anlatımından uyarlanan soruşturma vakası",
+ "language": "tr-TR",
+ "case_type": "true_crime_adaptation",
+ "content_warning": [
+  "cinayet",
+  "cinsel şiddet",
+  "reşit olmayan mağdur"
+ ],
+ "source": {
+  "platform": "YouTube",
+  "url": "https://www.youtube.com/watch?v=JLzlFaCuU-U",
+  "video_id": "JLzlFaCuU-U",
+  "source_material": "Kullanıcının sağladığı Türkçe otomatik transkript",
+  "transcript_verified_against_video": false,
+  "transcript_quality": "Otomatik transkripsiyonda kişi ve yer adlarında belirgin yazım/işitme hataları bulunuyor.",
+  "name_normalization": {
+   "victim": {
+    "canonical_name_used_in_game": "Megan Landowski",
+    "transcript_variants": [
+     "Megan Lendowski",
+     "Megan Landowski"
+    ]
+   },
+   "convicted_person": {
+    "canonical_name_used_in_game": "Robert Burns/Barns (transkriptteki yazım belirsiz)",
+    "transcript_variants": [
+     "Robert Burns",
+     "Robert Barns",
+     "Robert Buns",
+     "Robert Bs"
+    ],
+    "note": "Soyadının doğru yazımı bu transkriptle bağımsız olarak doğrulanmadı; yayın öncesinde güvenilir bir kaynakla kontrol edilmelidir."
+   },
+   "location": {
+    "canonical_name_used_in_game": "Portsmouth, Virginia (transkriptteki anlatıma göre)",
+    "note": "Otomatik transkriptte şehir adı farklı şekillerde yazılmıştır."
+   }
+  }
+ },
+ "source_notes": [
+  {
+   "id": "SN-01",
+   "type": "documentary_claim",
+   "text": "Belgesel anlatımına göre Megan Landowski, 10 Nisan 2008'de evinde öldürülmüş olarak bulundu."
+  },
+  {
+   "id": "SN-02",
+   "type": "documentary_claim",
+   "text": "Olay yeri anlatımında birinci kat penceresinden giriş, üst katta mücadele izleri, bant ve mutfakta bıçak bulunduğu aktarılıyor."
+  },
+  {
+   "id": "SN-03",
+   "type": "documentary_claim",
+   "text": "Belgesel, DNA bulgularının Keith Camp ve Chris Short ile eşleşmediğini söylüyor."
+  },
+  {
+   "id": "SN-04",
+   "type": "documentary_claim",
+   "text": "Belgesel anlatımına göre Robert Burns/Barns, bir sakız örneği vererek soruşturmayı yanıltmaya çalışmış; örneğin kendisine ait olmadığı anlaşılmıştır."
+  },
+  {
+   "id": "SN-05",
+   "type": "documentary_claim",
+   "text": "Belgesel, Robert Burns/Barns'ın 2009 Eylül ayında birinci derece cinayet ve tecavüz suçlarından mahkûm edildiğini ve 42 yıl hapis cezası aldığını anlatıyor."
+  },
+  {
+   "id": "SN-06",
+   "type": "inference",
+   "text": "Reddedilme, belgeselde dedektiflerin öne sürdüğü olası motivasyon teorisidir; kesin olarak kanıtlanmış motivasyon şeklinde sunulmamalıdır."
+  },
+  {
+   "id": "SN-07",
+   "type": "game_adaptation",
+   "text": "Aşağıdaki delil kartları, konumlar ve açılma koşulları oyunlaştırılmış temsillerdir; özgün polis dosyası, laboratuvar raporu veya gerçek belge değildir."
+  }
+ ],
+ "case_brief": {
+  "public_summary": "Belgesel anlatımına göre 16 yaşındaki Megan Landowski'nin öldürülmesi üzerine yürütülen soruşturma, ilk şüphelilerin DNA ile elenmesinin ardından okul çevresinden tanınan Robert Burns/Barns'a yönelir. Şüphelinin anlattığı maskeli saldırgan hikâyesi, olay yeri bulguları ve DNA anlatımıyla çelişir. Belgesel, şüphelinin daha sonra mahkûm edildiğini aktarır.",
+  "player_objective": "Anlatıdaki iddiaları delillerle karşılaştırmak, şüphelileri aceleyle suçlamadan elemek ve hangi sonuçların güçlü bulgu, hangilerinin yalnızca teori olduğunu ayırmak.",
+  "solved_status_in_source": "Belgesel anlatımına göre çözüldü; oyuncu deneyiminde soruşturma adım adım açılır."
+ },
+ "characters": [
+  {
+   "id": "char-victim",
+   "name": "Megan Landowski",
+   "role": "victim",
+   "age_at_event": 16,
+   "description": "Dansla ilgilenen lise öğrencisi. Belgeseldeki anlatımda olaydan önce okul ve sosyal çevresi soruşturmanın parçası olur.",
+   "knowledge_scope": [
+    "victim_background",
+    "school_social_circle"
+   ],
+   "source_confidence": "documentary_transcript"
+  },
+  {
+   "id": "char-convicted",
+   "name": "Robert Burns/Barns",
+   "role": "convicted_person_in_documentary",
+   "age_at_event": 17,
+   "description": "Megan'ın önceki okul çevresinden tanıdığı genç. Transkriptte soyadı farklı biçimlerde yazıldığı için isim doğrulaması gerekir.",
+   "knowledge_scope": [
+    "prior_acquaintance",
+    "dna_sample_incident",
+    "interview_account"
+   ],
+   "source_confidence": "documentary_transcript_name_uncertain"
+  },
+  {
+   "id": "char-camp",
+   "name": "Keith Camp",
+   "role": "initial_suspect_ruled_out_in_documentary",
+   "description": "Belgeselde Megan'ın daha önce uygunsuz davranışlarla suçladığı aile dostu/denizci olarak anlatılır. Anlatıma göre DNA örneği olay yeri örneğiyle eşleşmez.",
+   "knowledge_scope": [
+    "prior_allegation",
+    "search",
+    "dna_exclusion"
+   ],
+   "source_confidence": "documentary_transcript"
+  },
+  {
+   "id": "char-short",
+   "name": "Chris Short",
+   "role": "family_member_ruled_out_in_documentary",
+   "description": "Megan'ın üvey babası; cesedi bulan ve acil yardım çağrısı yapan kişi olarak anlatılır. Belgeselde DNA örneğinin eşleşmediği aktarılır.",
+   "knowledge_scope": [
+    "family_context",
+    "discovery",
+    "dna_exclusion"
+   ],
+   "source_confidence": "documentary_transcript"
+  },
+  {
+   "id": "char-mcdaniel",
+   "name": "Dedektif McDaniel",
+   "role": "investigator",
+   "description": "Belgeselde soruşturmayı yürüten dedektiflerden biri olarak yer alır. Adının yazımı ve tam unvanı bağımsız doğrulama gerektirir.",
+   "knowledge_scope": [
+    "investigation",
+    "interviews",
+    "evidence_interpretation"
+   ],
+   "source_confidence": "documentary_transcript"
+  },
+  {
+   "id": "char-funkhauser",
+   "name": "Dedektif Funkhauser",
+   "role": "investigator",
+   "description": "Belgeselde olay yerine gelen ve soruşturmayı sürdüren dedektif olarak anılır. Adının yazımı otomatik transkript nedeniyle doğrulanmalıdır.",
+   "knowledge_scope": [
+    "crime_scene",
+    "family_notification",
+    "case_followup"
+   ],
+   "source_confidence": "documentary_transcript_name_uncertain"
+  },
+  {
+   "id": "char-heather",
+   "name": "Heather",
+   "role": "friend_witness",
+   "description": "Megan'ın okuldan arkadaşı olarak anlatılır; sosyal çevre hakkında polise bilgi verir.",
+   "knowledge_scope": [
+    "school_social_circle"
+   ],
+   "source_confidence": "documentary_transcript"
+  }
+ ],
+ "evidence": [
+  {
+   "id": "E01",
+   "title": "Olay yeri: mutfak",
+   "category": "crime_scene",
+   "summary": "Belgesel, Megan'ın mutfakta kan izleri bulunan bir alanda bulunduğunu; boyun ve sırt bölgesinde bıçak yaraları olduğunu anlatır.",
+   "source_basis": [
+    "SN-01",
+    "SN-02"
+   ],
+   "evidentiary_value": "high_within_documentary_narrative",
+   "unlocks": [
+    "LOC-kitchen",
+    "E04"
+   ],
+   "limitations": [
+    "Bu kart, gerçek olay yeri fotoğrafı veya adli tıp raporu değildir."
+   ]
+  },
+  {
+   "id": "E02",
+   "title": "Pencere ve giriş güzergâhı",
+   "category": "scene_reconstruction",
+   "summary": "Olay yeri incelemesine ilişkin anlatım, şüphelinin kapıdan değil birinci kattaki pencereden girdiği sonucuna varıldığını aktarır.",
+   "source_basis": [
+    "SN-02"
+   ],
+   "evidentiary_value": "medium_within_documentary_narrative",
+   "unlocks": [
+    "LOC-window"
+   ],
+   "limitations": [
+    "Giriş güzergâhı belgeselde aktarılan inceleme sonucudur; bu paket özgün inceleme raporunu içermez."
+   ]
+  },
+  {
+   "id": "E03",
+   "title": "Üst kattaki bant ve mücadele izleri",
+   "category": "trace_evidence",
+   "summary": "Belgesel, üst kattaki yatak odasında dağılmış yatak ve kurban üzerinde kullanıldığı belirtilen bantla benzer bant bulunduğunu anlatır.",
+   "source_basis": [
+    "SN-02"
+   ],
+   "evidentiary_value": "medium_within_documentary_narrative",
+   "unlocks": [
+    "LOC-upstairs"
+   ],
+   "limitations": [
+    "Bant karşılaştırmasının laboratuvar ayrıntıları transkriptte yer almıyor."
+   ]
+  },
+  {
+   "id": "E04",
+   "title": "Bıçak anlatımı",
+   "category": "physical_evidence",
+   "summary": "Belgeselde mutfak tezgâhı/lavabo çevresinde bir bıçak bulunduğu ve olası cinayet silahı olarak değerlendirildiği aktarılır.",
+   "source_basis": [
+    "SN-02"
+   ],
+   "evidentiary_value": "medium_within_documentary_narrative",
+   "unlocks": [
+    "question-weapon"
+   ],
+   "limitations": [
+    "Silah üzerinde parmak izi veya DNA sonucu bu transkriptte ayrıntılı biçimde verilmemiştir."
+   ]
+  },
+  {
+   "id": "E05",
+   "title": "Olay yerindeki biyolojik örnek",
+   "category": "dna",
+   "summary": "Belgesel, olay yerinden alınan DNA örneğinin karşılaştırmalar için kullanıldığını ve soruşturmanın yönünü değiştirdiğini anlatır.",
+   "source_basis": [
+    "SN-03",
+    "SN-05"
+   ],
+   "evidentiary_value": "high_within_documentary_narrative",
+   "unlocks": [
+    "E06",
+    "E07",
+    "E08"
+   ],
+   "limitations": [
+    "Özgün laboratuvar raporu, profil istatistikleri ve delil zinciri bu pakette bulunmuyor."
+   ]
+  },
+  {
+   "id": "E06",
+   "title": "Keith Camp DNA karşılaştırması",
+   "category": "suspect_elimination",
+   "summary": "Belgesel anlatımına göre Keith Camp'in DNA örneği olay yerindeki örnekle eşleşmez.",
+   "source_basis": [
+    "SN-03"
+   ],
+   "evidentiary_value": "high_within_documentary_narrative",
+   "unlocks": [
+    "question-camp"
+   ],
+   "limitations": [
+    "Bu, belgeselin aktardığı sonuçtur; bağımsız laboratuvar belgesi değildir."
+   ]
+  },
+  {
+   "id": "E07",
+   "title": "Chris Short DNA karşılaştırması",
+   "category": "suspect_elimination",
+   "summary": "Belgesel anlatımına göre Chris Short'un DNA örneği de olay yerindeki örnekle eşleşmez.",
+   "source_basis": [
+    "SN-03"
+   ],
+   "evidentiary_value": "high_within_documentary_narrative",
+   "unlocks": [
+    "question-family"
+   ],
+   "limitations": [
+    "Bu, belgeselin aktardığı sonuçtur; bağımsız laboratuvar belgesi değildir."
+   ]
+  },
+  {
+   "id": "E08",
+   "title": "Sakız örneği ve yanıltıcı örnek",
+   "category": "interview_and_dna",
+   "summary": "Belgeselde Robert Burns/Barns'ın kendisinin çiğnediğini söylediği sakızı verdiği; laboratuvarın örneğin bir kadına ait olduğunu bildirdiği aktarılır.",
+   "source_basis": [
+    "SN-04"
+   ],
+   "evidentiary_value": "medium_within_documentary_narrative",
+   "unlocks": [
+    "question-suspect-account"
+   ],
+   "limitations": [
+    "Sakız örneğinin nasıl toplandığı ve laboratuvar raporunun ayrıntıları transkriptte tam olarak belgelenmiyor."
+   ]
+  },
+  {
+   "id": "E09",
+   "title": "Okul çevresi ve tanışıklık",
+   "category": "witness_statements",
+   "summary": "Belgesel, Megan'ın arkadaşlarıyla yapılan görüşmeler ve eski okul çevresine dönülmesi sonucunda Robert Burns/Barns adının yeniden incelendiğini anlatır.",
+   "source_basis": [
+    "SN-04"
+   ],
+   "evidentiary_value": "investigative_lead",
+   "unlocks": [
+    "LOC-school",
+    "question-relationship"
+   ],
+   "limitations": [
+    "Tanık anlatımları tek başına cinayeti kanıtlamaz; transkriptte tüm görüşme kayıtları bulunmuyor."
+   ]
+  },
+  {
+   "id": "E10",
+   "title": "Şüphelinin anlatımı ve çelişkiler",
+   "category": "interview_statement",
+   "summary": "Belgeselde şüpheli, olayda maskeli başka bir kişinin bulunduğunu ve kendisinin zorlandığını ileri sürer. Dedektifler bu anlatımın olay yeri bilgileriyle uyuşmadığı kanaatine varır.",
+   "source_basis": [
+    "SN-04",
+    "SN-05"
+   ],
+   "evidentiary_value": "corroborative_within_documentary_narrative",
+   "unlocks": [
+    "question-alibi",
+    "prosecution-review"
+   ],
+   "limitations": [
+    "Bu kart belgeseldeki anlatımın özetidir; tam ifade tutanağı değildir."
+   ]
+  }
+ ],
+ "timeline": [
+  {
+   "id": "T01",
+   "date": "2008-04-10",
+   "label": "Megan'ın evde bulunması",
+   "description": "Belgesel anlatımına göre Megan, üvey babası eve geldiğinde evde ölü bulunur.",
+   "source_basis": [
+    "SN-01"
+   ]
+  },
+  {
+   "id": "T02",
+   "date": "2008-04-10",
+   "label": "Olay yeri incelemesi",
+   "description": "Polis ve adli tıp ekibi evdeki izleri inceler; pencere, bant, bıçak ve biyolojik örnekler soruşturmada öne çıkar.",
+   "source_basis": [
+    "SN-02"
+   ]
+  },
+  {
+   "id": "T03",
+   "date": "2008",
+   "label": "İlk şüphelilerin incelenmesi",
+   "description": "Keith Camp ve Chris Short soruşturma kapsamında değerlendirilir; belgesel DNA karşılaştırmalarının bu isimleri elediğini aktarır.",
+   "source_basis": [
+    "SN-03"
+   ]
+  },
+  {
+   "id": "T04",
+   "date": "2008",
+   "label": "Okul çevresine dönülmesi",
+   "description": "Dedektifler arkadaşlarla görüşür ve eski okul çevresinden Robert Burns/Barns adını yeniden inceler.",
+   "source_basis": [
+    "SN-04"
+   ]
+  },
+  {
+   "id": "T05",
+   "date": "2008",
+   "label": "Sakız örneği ve sorgulama",
+   "description": "Belgesel, şüphelinin verdiği sakız örneğinin kendisine ait olmadığının anlaşılmasını ve sonrasında çelişkili anlatımını aktarır.",
+   "source_basis": [
+    "SN-04"
+   ]
+  },
+  {
+   "id": "T06",
+   "date": "2008",
+   "label": "Tutuklama",
+   "description": "Belgesel anlatımına göre Robert Burns/Barns, Megan'ın öldürülmesi nedeniyle tutuklanır.",
+   "source_basis": [
+    "SN-05"
+   ]
+  },
+  {
+   "id": "T07",
+   "date": "2009-09",
+   "label": "Mahkûmiyet ve ceza",
+   "description": "Belgesel anlatımına göre şüpheli birinci derece cinayet ve tecavüz suçlarından mahkûm edilir ve 42 yıl hapis cezasına çarptırılır.",
+   "source_basis": [
+    "SN-05"
+   ]
+  }
+ ],
+ "question_rules": [
+  {
+   "id": "question-weapon",
+   "question": "Olay yeri anlatımında olası cinayet silahı olarak ne belirtiliyor?",
+   "answer_type": "single_choice",
+   "options": [
+    "Mutfakta bulunan bıçak",
+    "Dışarıda bulunan tabanca",
+    "Kırık cam parçası"
+   ],
+   "correct_option": 0,
+   "explanation": "Transkriptte mutfak tezgâhı/lavabo çevresinde bulunan bir bıçaktan söz ediliyor."
+  },
+  {
+   "id": "question-camp",
+   "question": "Belgesel anlatımına göre Keith Camp neden şüpheli listesinden çıkarılıyor?",
+   "answer_type": "single_choice",
+   "options": [
+    "DNA örneği eşleşmediği için",
+    "Olay günü şehir dışında olduğu kesinleştiği için",
+    "Bir tanık itiraf ettiği için"
+   ],
+   "correct_option": 0,
+   "explanation": "Transkript, Camp'in DNA örneğinin olay yeri örneğiyle eşleşmediğini söylüyor."
+  },
+  {
+   "id": "question-family",
+   "question": "Belgesel anlatımına göre Chris Short'un DNA karşılaştırmasının sonucu nedir?",
+   "answer_type": "single_choice",
+   "options": [
+    "Eşleşme olduğu söyleniyor",
+    "Eşleşme olmadığı söyleniyor",
+    "Sonuç hiç alınmıyor"
+   ],
+   "correct_option": 1,
+   "explanation": "Transkript, Chris Short'un örneğinin de eşleşmediğini aktarıyor."
+  },
+  {
+   "id": "question-suspect-account",
+   "question": "Şüphelinin verdiği sakız örneğiyle ilgili hangi çelişki anlatılıyor?",
+   "answer_type": "single_choice",
+   "options": [
+    "Örneğin bir kadına ait olduğu bildirilir",
+    "Örnekte olay yeri kanı bulunur",
+    "Örnek hiç laboratuvara gönderilmez"
+   ],
+   "correct_option": 0,
+   "explanation": "Belgesel, laboratuvarın sakız örneğinin bir kadına ait olduğunu bildirdiğini anlatıyor."
+  },
+  {
+   "id": "question-relationship",
+   "question": "Soruşturmanın ilerleyen aşamasında hangi yeni araştırma yönü öne çıkıyor?",
+   "answer_type": "single_choice",
+   "options": [
+    "Megan'ın önceki okul ve sosyal çevresi",
+    "Başka bir eyaletteki banka soygunu",
+    "Kayıp bir araç dosyası"
+   ],
+   "correct_option": 0,
+   "explanation": "Dedektifler Megan'ın önceki okulundaki tanışıklıkları ve arkadaş çevresini yeniden inceliyor."
+  },
+  {
+   "id": "question-alibi",
+   "question": "Şüphelinin maskeli başka bir saldırgan hakkındaki anlatımı oyun içinde nasıl değerlendirilmelidir?",
+   "answer_type": "single_choice",
+   "options": [
+    "Bağımsız delillerle sınanması gereken bir ifade",
+    "Tek başına kesin kanıt",
+    "Otomatik olarak doğru kabul edilen bilgi"
+   ],
+   "correct_option": 0,
+   "explanation": "Bir ifadenin doğru olup olmadığı diğer delillerle karşılaştırılmalıdır."
+  }
+ ],
+ "prosecution": {
+  "source_outcome": {
+   "status": "convicted_as_reported_by_documentary",
+   "charges_as_reported": [
+    "birinci derece cinayet",
+    "tecavüz"
+   ],
+   "sentence_as_reported": "42 yıl hapis",
+   "reported_date": "2009-09",
+   "verification_status": "Yalnızca sağlanan transkriptteki anlatıma dayanıyor; bağımsız mahkeme kaydıyla doğrulanmadı."
+  },
+  "game_rule": {
+   "prosecution_ready_when": [
+    "E01",
+    "E05",
+    "E08",
+    "E09",
+    "E10"
+   ],
+   "required_reasoning": [
+    "Olay yeri anlatımını biyolojik örnek anlatımından ayır",
+    "İlk şüphelilerin elenmesini gerekçelendir",
+    "Sakız örneğinin neden güvenilir bir eşleşme olmadığını açıkla",
+    "Şüphelinin alternatif anlatımını bağımsız bulgularla karşılaştır",
+    "Reddedilme motivasyonunu kesin gerçek değil, belgeseldeki teori olarak etiketle"
+   ],
+   "warning": "Bu koşullar oyun için tasarlanmıştır; gerçek savcılık dosyasındaki delil standardını veya gerçek delil listesini temsil etmez."
+  }
+ },
+ "map": {
+  "locations": [
+   {
+    "id": "LOC-home",
+    "name": "Megan'ın evi",
+    "description": "Olay yeri incelemesinin merkezindeki ev.",
+    "unlocked_by": [
+     "E01"
+    ]
+   },
+   {
+    "id": "LOC-kitchen",
+    "name": "Mutfak",
+    "description": "Bıçak ve kan izleri anlatımının geçtiği alan.",
+    "unlocked_by": [
+     "E01"
+    ]
+   },
+   {
+    "id": "LOC-window",
+    "name": "Birinci kat penceresi",
+    "description": "Belgeselde giriş güzergâhı olarak anlatılan nokta.",
+    "unlocked_by": [
+     "E02"
+    ]
+   },
+   {
+    "id": "LOC-upstairs",
+    "name": "Üst kattaki yatak odası",
+    "description": "Mücadele ve bant anlatımının geçtiği alan.",
+    "unlocked_by": [
+     "E03"
+    ]
+   },
+   {
+    "id": "LOC-school",
+    "name": "Okul çevresi",
+    "description": "Megan'ın arkadaşları ve eski tanışıklıkların araştırıldığı yer.",
+    "unlocked_by": [
+     "E09"
+    ]
+   }
+  ],
+  "unlock_policy": "Konumun kendisini açmak için aynı konumda bulunan delile bağımlılık oluşturma. E01 temel olay yeri erişimini açar; E02 ve E03 kendi konumları görünür olduktan sonra incelenebilir."
+ },
+ "tests": {
+  "evidence-unlocks": [
+   {
+    "id": "TEST-01",
+    "given": [
+     "E01"
+    ],
+    "expect_unlocked": [
+     "LOC-home",
+     "LOC-kitchen"
+    ]
+   },
+   {
+    "id": "TEST-02",
+    "given": [
+     "E02"
+    ],
+    "expect_unlocked": [
+     "LOC-window"
+    ]
+   },
+   {
+    "id": "TEST-03",
+    "given": [
+     "E03"
+    ],
+    "expect_unlocked": [
+     "LOC-upstairs"
+    ]
+   },
+   {
+    "id": "TEST-04",
+    "given": [
+     "E09"
+    ],
+    "expect_unlocked": [
+     "LOC-school"
+    ]
+   }
+  ],
+  "character-knowledge": [
+   {
+    "id": "TEST-05",
+    "rule": "Karakterler yalnızca knowledge_scope içinde belirtilen konularda bilgi verebilir."
+   },
+   {
+    "id": "TEST-06",
+    "rule": "Hiçbir karakter oyuncuya laboratuvar raporunun transkriptte bulunmayan sayısal veya teknik ayrıntılarını uydurarak aktaramaz."
+   }
+  ],
+  "timeline-consistency": [
+   {
+    "id": "TEST-07",
+    "rule": "Olay tarihi 2008-04-10 olarak korunmalı; mahkûmiyet tarihi yalnızca transkriptin verdiği 2009-09 düzeyinde tutulmalı."
+   },
+   {
+    "id": "TEST-08",
+    "rule": "Reddedilme motivasyonu kesin olgu olarak değil, dedektiflerin belgeselde aktarılan teorisi olarak etiketlenmeli."
+   }
+  ]
+ },
+ "implementation_notes": {
+  "server_authoritative": true,
+  "client_must_not_set": [
+   "isGuilty",
+   "caseStrength",
+   "prosecutionAccepted",
+   "isUnlocked"
+  ],
+  "ai_provider_default": "MockAIProvider",
+  "ai_constraints": [
+   "Kaynakta olmayan delil veya ifade tutanağı üretme.",
+   "Kaynak iddiaları ile oyun mekaniğini ayrı etiketle.",
+   "Motivasyon teorisini kesin gerçek gibi sunma.",
+   "Cinsel şiddet ayrıntılarını gereksiz biçimde grafikleştirme."
+  ],
+  "production_checks": [
+   "Kişi ve yer adlarını güvenilir kaynakla doğrula.",
+   "Mahkeme sonucu ve ceza bilgisini mümkünse güvenilir bir kamu kaynağıyla doğrula.",
+   "Bu dosyayı mevcut case-001 şemasıyla doğrula; alan adları proje şemasına göre uyarlanabilir."
+  ]
+ }
+}

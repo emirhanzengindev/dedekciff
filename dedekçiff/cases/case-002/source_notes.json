@@ -1,0 +1,73 @@
+{
+  "caseId": "case-002",
+  "title": "Reddedilmenin Ölümcül Bedeli — Kaynak ve uyarlama notları",
+  "language": "tr-TR",
+  "purpose": "Belgesel transkriptindeki iddiaları, oyun için üretilen uyarlama unsurlarından ayrı tutar. Aşağıdaki notlar oyun içi kanıt değildir.",
+  "source": {
+    "platform": "YouTube",
+    "url": "https://www.youtube.com/watch?v=JLzlFaCuU-U",
+    "video_id": "JLzlFaCuU-U",
+    "source_material": "Kullanıcının sağladığı Türkçe otomatik transkript",
+    "transcript_verified_against_video": false,
+    "transcript_quality": "Otomatik transkripsiyonda kişi ve yer adlarında belirgin yazım/işitme hataları bulunuyor."
+  },
+  "name_normalization": {
+    "victim": {
+      "canonical_name_used_in_game": "Megan Landowski",
+      "transcript_variants": ["Megan Lendowski", "Megan Landowski"]
+    },
+    "convicted_person": {
+      "canonical_name_used_in_game": "Robert Burns/Barns (transkriptteki yazım belirsiz)",
+      "transcript_variants": ["Robert Burns", "Robert Barns", "Robert Buns", "Robert Bs"],
+      "note": "Soyadının doğru yazımı bu transkriptle bağımsız olarak doğrulanmadı; yayın öncesinde güvenilir bir kaynakla kontrol edilmelidir."
+    },
+    "location": {
+      "canonical_name_used_in_game": "Portsmouth, Virginia (transkriptteki anlatıma göre)",
+      "note": "Otomatik transkriptte şehir adı farklı şekillerde yazılmıştır."
+    }
+  },
+  "documentary_claims": [
+    {
+      "id": "SN-01",
+      "type": "documentary_claim",
+      "text": "Belgesel anlatımına göre Megan Landowski, 10 Nisan 2008'de evinde öldürülmüş olarak bulundu."
+    },
+    {
+      "id": "SN-02",
+      "type": "documentary_claim",
+      "text": "Olay yeri anlatımında birinci kat penceresinden giriş, üst katta mücadele izleri, bant ve mutfakta bıçak bulunduğu aktarılıyor."
+    },
+    {
+      "id": "SN-03",
+      "type": "documentary_claim",
+      "text": "Belgesel, DNA bulgularının Keith Camp ve Chris Short ile eşleşmediğini söylüyor."
+    },
+    {
+      "id": "SN-04",
+      "type": "documentary_claim",
+      "text": "Belgesel anlatımına göre Robert Burns/Barns, bir sakız örneği vererek soruşturmayı yanıltmaya çalışmış; örneğin kendisine ait olmadığı anlaşılmıştır."
+    },
+    {
+      "id": "SN-05",
+      "type": "documentary_claim",
+      "text": "Belgesel, Robert Burns/Barns'ın 2009 Eylül ayında birinci derece cinayet ve tecavüz suçlarından mahkûm edildiğini ve 42 yıl hapis cezası aldığını anlatıyor."
+    },
+    {
+      "id": "SN-06",
+      "type": "inference",
+      "text": "Reddedilme, belgeselde dedektiflerin öne sürdüğü olası motivasyon teorisidir; kesin olarak kanıtlanmış motivasyon şeklinde sunulmamalıdır."
+    },
+    {
+      "id": "SN-07",
+      "type": "game_adaptation",
+      "text": "Delil kartları, konumlar ve açılma koşulları oyunlaştırılmış temsillerdir; özgün polis dosyası, laboratuvar raporu veya gerçek belge değildir."
+    }
+  ],
+  "adaptationRules": [
+    "Belgesel iddiaları oyun içi kesin olgu gibi sunulmamalı; her ifade ve kart transkript anlatımına atıfla belirtilir.",
+    "Transkriptte bulunmayan delil, ifade tutanağı, adli rapor, sayısal veya teknik ayrıntı uydurulmamalı.",
+    "Kişi ve yer adlarındaki belirsizlikler korunmalı; yayın öncesi güvenilir kaynakla doğrulanmalıdır.",
+    "Reddedilme motivasyonu kesin gerçek değil, belgeseldeki teori olarak etiketlenmeli.",
+    "Cinsel şiddet ayrıntıları gereksiz biçimde grafikleştirilmemeli; mağdur oynanabilir veya sorgulanabilir yapılmamalı."
+  ]
+}

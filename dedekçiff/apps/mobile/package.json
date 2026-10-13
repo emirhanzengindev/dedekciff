@@ -1,0 +1,52 @@
+{
+  "name": "@case-001/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "build": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@babel/runtime": "7.29.7",
+    "@expo/metro-runtime": "57.0.16",
+    "@expo/vector-icons": "15.1.1",
+    "@hookform/resolvers": "3.9.1",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.117.3",
+    "@tanstack/react-query": "5.62.8",
+    "expo": "57.0.27",
+    "expo-asset": "57.0.19",
+    "expo-constants": "57.0.21",
+    "expo-font": "~57.0.4",
+    "expo-linking": "57.0.12",
+    "expo-router": "57.0.25",
+    "expo-secure-store": "57.0.4",
+    "expo-status-bar": "57.0.1",
+    "query-string": "7.1.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-hook-form": "7.54.2",
+    "react-native": "0.86.3",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "5.7.0",
+    "react-native-screens": "4.26.2",
+    "react-native-svg": "15.15.4",
+    "react-native-web": "0.21.4",
+    "react-native-worklets": "0.10.1",
+    "zod": "3.24.1",
+    "zustand": "5.0.2"
+  },
+  "devDependencies": {
+    "@react-native/metro-config": "0.86.3",
+    "@types/react": "19.2.18",
+    "typescript": "6.0.3",
+    "vitest": "2.1.8"
+  }
+}

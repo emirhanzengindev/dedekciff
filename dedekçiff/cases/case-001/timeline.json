@@ -1,0 +1,84 @@
+{
+  "caseId": "case-001",
+  "contentType": "fictional_gameplay_data",
+  "timezone": "Europe/Istanbul",
+  "timeline": [
+    {
+      "id": "T01",
+      "timestamp": "2026-05-10T18:00:00+03:00",
+      "event": "Leyla, gösteri vaadi hakkında ilk mesajı alır.",
+      "sourceEvidenceIds": [
+        "E07"
+      ],
+      "status": "fictional_canonical",
+      "certainty": "medium",
+      "note": "Tarih ve saat tamamen kurgusaldır. Mesajlar ancak daha sonra incelenince delil olarak açılır."
+    },
+    {
+      "id": "T02",
+      "timestamp": "2026-05-12T13:50:00+03:00",
+      "event": "Leyla gösteri alanına gelir.",
+      "sourceEvidenceIds": [
+        "E02",
+        "E04"
+      ],
+      "status": "fictional_canonical",
+      "certainty": "medium",
+      "note": "Cem’in mekânda görmeye ilişkin beyanı, tek başına ödeme veya suç kastını kanıtlamaz."
+    },
+    {
+      "id": "T03",
+      "timestamp": "2026-05-12T14:10:00+03:00",
+      "event": "Kurgusal gösteri yapılır.",
+      "sourceEvidenceIds": [
+        "E02",
+        "E03"
+      ],
+      "status": "fictional_canonical",
+      "certainty": "high",
+      "note": "Nesne inceleme sonucu yalnızca kurgusal sahne düzenini destekler."
+    },
+    {
+      "id": "T04",
+      "timestamp": "2026-05-12T14:30:00+03:00",
+      "event": "Leyla, elden 150000 TL verdiğini iddia eder.",
+      "sourceEvidenceIds": [
+        "E05"
+      ],
+      "status": "fictional_claim_not_independently_proven",
+      "certainty": "low",
+      "note": "Bu bir karakter beyanıdır; bağımsız finansal doğrulama yoktur."
+    },
+    {
+      "id": "T05",
+      "timestamp": "2026-05-13T11:00:00+03:00",
+      "event": "Leyla polis merkezine şikâyette bulunur.",
+      "sourceEvidenceIds": [
+        "E01"
+      ],
+      "status": "fictional_canonical",
+      "certainty": "high",
+      "note": "Kayıt, şikâyetin yapıldığını gösterir; iddianın doğruluğunu tek başına göstermez."
+    },
+    {
+      "id": "T06",
+      "timestamp": "2026-05-14T15:00:00+03:00",
+      "event": "Benzer şikâyetler aranırken Nermin’in kurgusal şikâyet kaydı bulunur.",
+      "sourceEvidenceIds": [
+        "E06"
+      ],
+      "status": "fictional_canonical",
+      "certainty": "high",
+      "note": "Bu olay tamamen oyun kurgusudur."
+    }
+  ],
+  "historicalTimelineNote": "Kaynak haberler 5–7 Şubat 2020 tarihlerinde yayımlanmıştır. Haber yayın tarihleri olayların kesin gerçekleşme tarihleri değildir. Bu dosyada gerçek olay için kesin tarih/saat uydurulmamıştır.",
+  "timelineRules": {
+    "timezone": "Europe/Istanbul",
+    "timestampsMustBeISO8601WithOffset": true,
+    "chronologicalOrderRequired": true,
+    "allSourceEvidenceIdsMustExist": true,
+    "claimEventsMustBeMarkedUnverified": true,
+    "historicalPublicationDatesMustNotBeUsedAsIncidentDates": true
+  }
+}

@@ -1,0 +1,108 @@
+98:     if (body.caseId !== caseData.caseId) return reply.code(404).send({ error: "case_not_found" });
+99:     const session = createSession(caseData, request.userId ?? "");
+100:     await sessionStore.saveSession(session);
+101:     return reply.code(201).send(serializeSession(caseData, session));
+102:   });
+103: 
+104:   app.get("/api/sessions/:sessionId", async (request, reply) => {
+105:     const session = await sessionStore.getSession(paramsSchema.parse(request.params).sessionId, request.userId ?? "");
+106:     if (!session) return reply.code(404).send({ error: "session_not_found" });
+107:     return serializeSession(caseData, session);
+108:   });
+109: 
+110:   app.get("/api/sessions/:sessionId/map", async (request, reply) => {
+111:     const session = await sessionStore.getSession(paramsSchema.parse(request.params).sessionId, request.userId ?? "");
+112:     if (!session) return reply.code(404).send({ error: "session_not_found" });
+113:     return { locations: getVisibleLocations(caseData, session) };
+114:   });
+115: 
+116:   app.post("/api/sessions/:sessionId/interactions", async (request, reply) => {
+117:     const params = paramsSchema.parse(request.params);
+118:     const session = await sessionStore.getSession(params.sessionId, request.userId ?? "");
+119:     if (!session) return reply.code(404).send({ error: "session_not_found" });
+120:     const action = playerActionSchema.parse(request.body);
+121:     const result = applyPlayerAction(caseData, session, action);
+122:     await sessionStore.saveSession(result.session);
+123:     if (result.status === "denied") return reply.code(403).send({ error: result.reason, session: serializeSession(caseData, result.session) });
+124:     return { ...result, session: serializeSession(caseData, result.session) };
+125:   });
+126: 
+127:   app.get("/api/sessions/:sessionId/evidence", async (request, reply) => {
+128:     const session = await sessionStore.getSession(paramsSchema.parse(request.params).sessionId, request.userId ?? "");
+129:     if (!session) return reply.code(404).send({ error: "session_not_found" });
+130:     return { evidence: getAccessibleEvidence(caseData, session) };
+131:   });
+132: 
+133:   app.post("/api/sessions/:sessionId/questions", async (request, reply) => {
+134:     const params = paramsSchema.parse(request.params);
+135:     const session = await sessionStore.getSession(params.sessionId, request.userId ?? "");
+136:     if (!session) return reply.code(404).send({ error: "session_not_found" });
+137:     const body = questionSchema.parse(request.body);
+138:     const questionTopic = classifyQuestionIntent(body.question);
+139:     if (!questionTopic) {
+140:       const answer = answerCharacterQuestion(caseData, session, body.characterId, body.question);
+141:       return { ...answer, newlyUnlockedEvidenceIds: [], session: serializeSession(caseData, session) };
+142:     }
+143:     const trustedTopic = body.characterId === "C03" && questionTopic === "who_invited"
+144:       ? "who_arranged_show"
+145:       : body.characterId === "C03" && questionTopic === "suspect_presence"
+146:         ? "who_arranged_show"
+147:       : body.characterId === "C02" && questionTopic === "suspect_presence"
+148:         ? "who_invited"
+149:       : body.characterId === "C01" && questionTopic === "scene_objects"
+150:         ? "show_details"
+151:       : body.characterId === "C01" && questionTopic === "payment_recipient"
+152:         ? "payment_details"
+153:       : questionTopic.startsWith("payment_") || questionTopic === "payment_details"
+154:         ? "payment_details"
+155:         : questionTopic;
+156:     let actionResult = applyPlayerAction(caseData, session, {
+157:       type: "ask_character",
+158:       characterId: body.characterId,
+159:       question: body.question,
+160:       topic: trustedTopic
+161:     });
+162:     if (actionResult.status === "denied") {
+163:       return reply.code(403).send({ error: actionResult.reason ?? "question_not_available" });
+164:     }
+165:     if (body.characterId === "C02") {
+166:       const normalizedQuestion = body.question.toLocaleLowerCase("tr-TR").replace(/[?!.,]/gu, "").trim();
+167:       const repeated = actionResult.session.questionHistory.filter(
+168:         (entry) => entry.characterId === "C02" && entry.question === normalizedQuestion
+169:       ).length >= 2;
+170:       const corroborated = actionResult.session.completedInterviews.some(
+171:         (interview) => interview.characterId === "C03" && interview.topic === "who_arranged_show"
+172:       );
+173:       const interrogation = actionResult.session.interrogations.find((item) => item.characterId === "C02");
+174:       const evidenceReady = ["E07", "E08"].every((id) => actionResult.session.unlockedEvidenceIds.includes(id));
+175:       if (repeated && corroborated && interrogation && interrogation.questionTopics.length >= 2 && evidenceReady) {
+176:         const completion = applyPlayerAction(caseData, actionResult.session, { type: "interview_suspect" });
+177:         if (completion.status === "applied") actionResult = completion;
+178:       }
+179:     }
+180:     await sessionStore.saveSession(actionResult.session);
+181:     const answer = answerCharacterQuestion(caseData, actionResult.session, body.characterId, body.question);
+182:     return {
+183:       ...answer,
+184:       newlyUnlockedEvidenceIds: actionResult.newlyUnlockedEvidenceIds,
+185:       session: serializeSession(caseData, actionResult.session)
+186:     };
+187:   });
+188: 
+189:   app.get("/api/sessions/:sessionId/timeline", async (request, reply) => {
+190:     const session = await sessionStore.getSession(paramsSchema.parse(request.params).sessionId, request.userId ?? "");
+191:     if (!session) return reply.code(404).send({ error: "session_not_found" });
+192:     return { timeline: getTimeline(caseData, session) };
+193:   });
+194: 
+195:   app.get("/api/sessions/:sessionId/contradictions", async (request, reply) => {
+196:     const session = await sessionStore.getSession(paramsSchema.parse(request.params).sessionId, request.userId ?? "");
+197:     if (!session) return reply.code(404).send({ error: "session_not_found" });
+198:     return {
+199:       contradictions: calculateCaseStrength(caseData, session).weakAreas.map((text, index) => ({
+200:         id: `CON-${index + 1}`,
+201:         text
+202:       }))
+203:     };
+204:   });
+205: 

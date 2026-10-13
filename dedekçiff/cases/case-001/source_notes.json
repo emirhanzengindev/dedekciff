@@ -1,0 +1,51 @@
+{
+  "caseId": "case-001",
+  "title": "Çil Çil Altınlar — Kaynak ve uyarlama notları",
+  "language": "tr-TR",
+  "purpose": "Gerçek olay hakkında yayımlanmış iddiaları, oyun için üretilen kurgu unsurlarından ayrı tutar.",
+  "historical_reporting": [
+    {
+      "id": "SRC01",
+      "publisher": "atv",
+      "publishedAt": "2020-02-05",
+      "title": "Boş bidonları çil çil altın olarak gördüler!",
+      "url": "https://www.atv.com.tr/haberler/2020/02/05/muge-anli-evlilik-cetesinin-din-istismari-uzerine-kurdugu-oyunu-ortaya-cikardi",
+      "reportedFacts": [
+        "Haberde Adile Yeşilgöz ve babası Mehmet Hayri Yeşilgöz, altın/define vaadiyle kandırıldıklarını iddia ederek anlatımda bulunuyor.",
+        "Haberde boş bidonlar, örtüler, ışıkların kapatılması ve sahte altın iddiası mağdur anlatımı olarak aktarılıyor.",
+        "Haberde İhsan Çapar hakkındaki iddiaları reddettiği belirtiliyor."
+      ],
+      "evidenceStatus": "Basında yer alan anlatım ve iddialar; bağımsız adli dosya veya mahkeme kararı olarak değerlendirilmemelidir."
+    },
+    {
+      "id": "SRC02",
+      "publisher": "atv",
+      "publishedAt": "2020-02-06",
+      "title": "Onlarca mağdur, milyarlarca liralık vurgun!",
+      "url": "https://www.atv.com.tr/haberler/2020/02/06/onlarca-magdur-milyarlarca-liralik-vurgun-muge-anlinin-ortaya-cikardigi-dolandiricilik-olayinda-soke-eden-iddialar",
+      "reportedFacts": [
+        "Haberde farklı kişilerin benzer yöntemlerle mağdur olduklarını ileri sürdükleri aktarılıyor.",
+        "Haberde Neytullah Bozkurt adlı kişinin 38 bin dolar verdiği yönündeki anlatımı yer alıyor."
+      ],
+      "evidenceStatus": "Mağdur beyanı olarak raporlanan iddialar; doğrulanmış finansal kayıt yerine geçmez."
+    },
+    {
+      "id": "SRC03",
+      "publisher": "atv",
+      "publishedAt": "2020-02-07",
+      "title": "Akıllara durgunluk veren dolandırıcılık olayında flaş gelişme!",
+      "url": "https://www.atv.com.tr/haberler/2020/02/07/akillara-durgunluk-veren-dolandiricilik-olayinda-flas-gelisme",
+      "reportedFacts": [
+        "Haberde İhsan Çapar ve kardeşi Mecit hakkında gözaltı bilgisi aktarıldı.",
+        "Haberde çeşitli mağdur iddiaları ve kullanılan isimler hakkında yayın içeriği özetleniyor."
+      ],
+      "evidenceStatus": "Gözaltı, suçluluğun kesinleştiği anlamına gelmez. Bu dosya mahkûmiyet veya nihai yargı kararı iddiasında bulunmaz."
+    }
+  ],
+  "adaptationRules": [
+    "Gerçek kişiler oyun içi şüpheli veya suçlu olarak yeniden adlandırılmamalı; oynanabilir vaka tamamen kurgusal kişiler kullanır.",
+    "Gerçek haberlerde bulunmayan banka dekontu, HTS kaydı, kamera görüntüsü, adli rapor veya kesin tarih uydurulup gerçek olaya atfedilmemeli.",
+    "Oynanabilir vakadaki bütün tarih, tutar, dekont, tanık ve laboratuvar sonuçları fictional=true olarak işaretlenir.",
+    "Gerçek kaynaklar yalnızca bağlam ve esin kaynağı içindir; oyun çözümünün kanıtı değildir."
+  ]
+}

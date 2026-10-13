@@ -1,0 +1,42 @@
+{
+  "suiteId": "case-001-timeline-consistency",
+  "testType": "data_driven_acceptance_tests",
+  "runnerContract": "Zaman damgalarını ISO-8601 offset ile parse et; kronolojik sırayı ve sourceEvidenceIds referanslarını doğrula.",
+  "assertions": [
+    {
+      "id": "TC01",
+      "assert": "timeline is strictly nondecreasing by timestamp",
+      "expected": true
+    },
+    {
+      "id": "TC02",
+      "assert": "all sourceEvidenceIds exist in evidence.json",
+      "expected": true
+    },
+    {
+      "id": "TC03",
+      "assert": "all timeline entries have status and certainty",
+      "expected": true
+    },
+    {
+      "id": "TC04",
+      "assert": "payment claim T04 is not labeled independently proven",
+      "expected": true
+    },
+    {
+      "id": "TC05",
+      "assert": "historical news publication dates are not incident timestamps",
+      "expected": true
+    },
+    {
+      "id": "TC06",
+      "assert": "all gameplay timeline entries are explicitly fictional",
+      "expected": true
+    },
+    {
+      "id": "TC07",
+      "assert": "no event after complaint timestamp appears earlier in chronology",
+      "expected": true
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+{
+  "suiteId": "case-001-evidence-unlocks",
+  "testType": "data_driven_acceptance_tests",
+  "runnerContract": "Backend test runner bu fixture dosyasını okuyup unlock evaluator üzerinde çalıştırmalıdır. JSON dosyası tek başına test çalıştırmaz.",
+  "cases": [
+    {
+      "id": "EU01",
+      "description": "Başlangıçta yalnızca ilk şikâyet erişilebilir",
+      "initialEvidenceIds": [],
+      "action": {
+        "type": "load_case"
+      },
+      "expectedUnlockedEvidenceIds": [
+        "E01"
+      ],
+      "expectedLockedEvidenceIds": [
+        "E02",
+        "E03",
+        "E04",
+        "E05",
+        "E06",
+        "E07",
+        "E08",
+        "E09",
+        "E10"
+      ]
+    },
+    {
+      "id": "EU02",
+      "description": "İlk şikâyet ve Leyla görüşmesi E02 araştırma adımını açar; benzer şikâyet araması yapılmadan E06 açılmaz.",
+      "initialEvidenceIds": [
+        "E01"
+      ],
+      "action": {
+        "type": "complete_interview",
+        "characterId": "C01",
+        "topic": "show_details"
+      },
+      "expectedUnlockedEvidenceIds": [
+        "E01",
+        "E02"
+      ],
+      "expectedLockedEvidenceIds": [
+        "E03",
+        "E04",
+        "E05",
+        "E06",
+        "E07",
+        "E08",
+        "E09",
+        "E10"
+      ]
+    },
+    {
+      "id": "EU02B",
+      "description": "Benzer şikâyet araması E01 sonrası E06 kaydını açar",
+      "initialEvidenceIds": [
+        "E01"
+      ],
+      "action": {
+        "type": "search_similar_complaints"
+      },
+      "expectedUnlockedEvidenceIds": [
+        "E01",
+        "E06"
+      ],
+      "expectedLockedEvidenceIds": [
+        "E02",
+        "E03",
+        "E04",
+        "E05",
+        "E07",
+        "E08",
+        "E09",
+        "E10"
+      ]
+    },
+    {
+      "id": "EU03",
+      "description": "Nesne incelemesi E02 olmadan açılamaz",
+      "initialEvidenceIds": [
+        "E01"
+      ],
+      "action": {
+        "type": "request_object_examination"
+      },
+      "expectedResult": "denied",
+      "expectedReason": "missing_prerequisite_E02"
+    },
+    {
+      "id": "EU04",
+      "description": "Ödeme beyanı, Leyla görüşmesinde ödeme konusu sorulmadan açılmaz",
+      "initialEvidenceIds": [
+        "E01"
+      ],
+      "action": {
+        "type": "ask_character",
+        "characterId": "C01",
+        "topic": "payment_details"
+      },
+      "expectedUnlockedEvidenceIds": [
+        "E01",
+        "E05"
+      ],
+      "expectedLockedEvidenceIds": [
+        "E07",
+        "E10"
+      ]
+    },
+    {
+      "id": "EU05",
+      "description": "Şüpheli görüşmesi E07 ve E08 birlikte açılmadan yapılamaz",
+      "initialEvidenceIds": [
+        "E01",
+        "E05"
+      ],
+      "action": {
+        "type": "interview_suspect"
+      },
+      "expectedResult": "denied",
+      "expectedReason": "missing_prerequisite_E07_E08"
+    },
+    {
+      "id": "EU06",
+      "description": "Oyuncu istemciden E10 id göndererek delili açamaz",
+      "initialEvidenceIds": [
+        "E01"
+      ],
+      "action": {
+        "type": "client_request_unlock",
+        "evidenceId": "E10"
+      },
+      "expectedResult": "denied",
+      "expectedReason": "server_only_unlock_evaluation"
+    },
+    {
+      "id": "EU07",
+      "description": "Tüm ön koşullar sağlanınca E10 yalnızca kurgusal ödeme doğrulama sınırı olarak açılır",
+      "initialEvidenceIds": [
+        "E01",
+        "E05",
+        "E07"
+      ],
+      "action": {
+        "type": "cross_check_payment_claim"
+      },
+      "expectedUnlockedEvidenceIds": [
+        "E10"
+      ],
+      "expectedFactMustInclude": "independent_payment_not_verified"
+    }
+  ]
+}

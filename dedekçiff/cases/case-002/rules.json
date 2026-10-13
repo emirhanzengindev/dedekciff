@@ -1,0 +1,224 @@
+{
+    "suspectCharacterId":  "char-convicted",
+    "prosecutorCharacterId":  null,
+    "interrogation":  {
+                          "minimumDurationMs":  120000,
+                          "requiredTopics":  [
+                                                 "prior_acquaintance",
+                                                 "dna_sample_incident",
+                                                 "interview_account"
+                                             ],
+                          "minimumCompletedTopics":  2,
+                          "completionEvidenceIds":  [
+                                                        "E08",
+                                                        "E09",
+                                                        "E10"
+                                                    ],
+                          "repeatedQuestionCount":  2,
+                          "corroboratingInterview":  {
+                                                         "characterId":  "char-heather",
+                                                         "topic":  "school_social_circle"
+                                                     }
+                      },
+    "characterEvidenceScope":  {
+                                   "char-convicted":  [
+                                                          "E08",
+                                                          "E09",
+                                                          "E10"
+                                                      ],
+                                   "char-initial-suspect":  [
+                                                                "E05",
+                                                                "E06"
+                                                            ],
+                                   "char-family-ruled-out":  [
+                                                                 "E01",
+                                                                 "E05",
+                                                                 "E07"
+                                                             ],
+                                   "char-mcdaniel":  [
+                                                         "E01",
+                                                         "E02",
+                                                         "E03",
+                                                         "E04",
+                                                         "E05",
+                                                         "E08",
+                                                         "E09",
+                                                         "E10"
+                                                     ],
+                                   "char-morris":  [
+                                                       "E01",
+                                                       "E06",
+                                                       "E07",
+                                                       "E10"
+                                                   ],
+                                   "char-heather":  [
+                                                        "E09"
+                                                    ],
+                                   "char-victim":  [
+
+                                                   ]
+                               },
+    "caseStrength":  {
+                         "weakAreas":  [
+                                           {
+                                               "id":  "independent_verification",
+                                               "requiresIndependentVerification":  true,
+                                               "text":  "Bağımsız doğrulama zayıf: tüm deliller belgesel anlatımıdır."
+                                           },
+                                           {
+                                               "id":  "cross_check_suspect_account",
+                                               "missingEvidenceIds":  [
+                                                                          "E10"
+                                                                      ],
+                                               "text":  "Şüphelinin anlatımı henüz olay yeri bulgularıyla çapraz kontrol edilmedi."
+                                           }
+                                       ]
+                     },
+    "prosecution":  {
+                        "readinessEvidenceIds":  [
+                                                     "E01",
+                                                     "E05",
+                                                     "E08",
+                                                     "E09",
+                                                     "E10"
+                                                 ],
+                        "components":  [
+                                           {
+                                               "id":  "S1",
+                                               "evaluation":  {
+                                                                  "kind":  "suspect_and_any_evidence",
+                                                                  "evidenceIds":  [
+                                                                                      "E09",
+                                                                                      "E10"
+                                                                                  ],
+                                                                  "points":  20
+                                                              }
+                                           },
+                                           {
+                                               "id":  "S2",
+                                               "evaluation":  {
+                                                                  "kind":  "evidence_tiers",
+                                                                  "tiers":  [
+                                                                                {
+                                                                                    "match":  "all",
+                                                                                    "evidenceIds":  [
+                                                                                                        "E01",
+                                                                                                        "E05"
+                                                                                                    ],
+                                                                                    "points":  20
+                                                                                }
+                                                                            ]
+                                                              }
+                                           },
+                                           {
+                                               "id":  "S3",
+                                               "evaluation":  {
+                                                                  "kind":  "evidence_tiers",
+                                                                  "tiers":  [
+                                                                                {
+                                                                                    "match":  "all",
+                                                                                    "evidenceIds":  [
+                                                                                                        "E06",
+                                                                                                        "E07"
+                                                                                                    ],
+                                                                                    "points":  20
+                                                                                },
+                                                                                {
+                                                                                    "match":  "any",
+                                                                                    "evidenceIds":  [
+                                                                                                        "E06",
+                                                                                                        "E07"
+                                                                                                    ],
+                                                                                    "points":  10
+                                                                                }
+                                                                            ]
+                                                              }
+                                           },
+                                           {
+                                               "id":  "S4",
+                                               "evaluation":  {
+                                                                  "kind":  "evidence_with_analysis",
+                                                                  "match":  "all",
+                                                                  "evidenceIds":  [
+                                                                                      "E08",
+                                                                                      "E10"
+                                                                                  ],
+                                                                  "pointsWithAnalysis":  20,
+                                                                  "points":  12
+                                                              }
+                                           },
+                                           {
+                                               "id":  "S5",
+                                               "evaluation":  {
+                                                                  "kind":  "analysis_present",
+                                                                  "points":  18
+                                                              }
+                                           }
+                                       ]
+                    },
+    "topicAliases":  [
+
+                     ],
+    "intentPatterns":  [
+                           {
+                               "intent":  "where_found",
+                               "pattern":  "(nerede|evde|bulun)"
+                           },
+                           {
+                               "intent":  "entry_point",
+                               "pattern":  "(pencere|giriş|gir)"
+                           },
+                           {
+                               "intent":  "weapon_account",
+                               "pattern":  "(bıçak|silah|mutfak)"
+                           },
+                           {
+                               "intent":  "struggle_account",
+                               "pattern":  "(mücadele|bant|üst kat|boğuş)"
+                           },
+                           {
+                               "intent":  "dna_sample",
+                               "pattern":  "(dna|örnek|biyolojik)"
+                           },
+                           {
+                               "intent":  "elimination",
+                               "pattern":  "(elen|eşleşme|karşılaştırma)"
+                           },
+                           {
+                               "intent":  "gum_sample",
+                               "pattern":  "(sakız)"
+                           },
+                           {
+                               "intent":  "school_circle",
+                               "pattern":  "(okul|heather|tanışıklık|arkadaş)"
+                           },
+                           {
+                               "intent":  "suspect_account",
+                               "pattern":  "(maskeli|saldırgan|hesap|ifade|uyudu)"
+                           },
+                           {
+                               "intent":  "motive_theory",
+                               "pattern":  "(redded|motivasyon|teori)"
+                           },
+                           {
+                               "intent":  "conviction_account",
+                               "pattern":  "(mahkûm|ceza|hapis|hüküm)"
+                           },
+                           {
+                               "intent":  "general",
+                               "pattern":  "([\\p{L}\\p{N}]{4,})"
+                           }
+                       ],
+    "recordQuestionsWithoutTopic":  true,
+    "narrativeStyle":  "evidence_matching",
+    "fallbackTexts":  {
+                          "unknown":  "Bu bilgi belgesel anlatımında doğrulanmıyor. Başka bir araştırma adımı gerekiyor.",
+                          "locked":  "Bu bilgiye henüz erişimin yok. Önce ilgili delili açmalısın.",
+                          "requiresInvestigation":  "Mevcut deliller bu soruyu yanıtlamaya yetmiyor. Bir sonraki araştırma adımını seç."
+                      },
+    "contentWarnings":  [
+                            "cinayet",
+                            "cinsel şiddet",
+                            "reşit olmayan mağdur"
+                        ]
+}

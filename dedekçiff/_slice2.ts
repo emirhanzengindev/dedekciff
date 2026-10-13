@@ -1,0 +1,141 @@
+    return reply("answered", "Murat’ı gösteri günü mekânda gördüm. Para alışverişini doğrudan görmedim.", [witnessEvidence.id], 0.78);
+  }
+  const suspectStatement = accessibleEvidence.find((evidence) => evidence.id === "E09");
+  if (character.id === "C02" && suspectStatement) {
+    return reply("answered", suspectStatement.facts.join(" "), [suspectStatement.id], 0.72);
+  }
+
+  const fallback = character.initialStatement ?? "Bu konuda yalnızca kendi bildiklerimi aktarabilirim.";
+  return reply("unknown", fallback, [], 0.55);
+}
+
+export function calculateCaseStrength(caseData: CaseData, session: SessionState) {
+  const evidence = getAccessibleEvidence(caseData, session);
+  const reliabilityScore = evidence.reduce((sum, item) => sum + item.reliability * 7, 0);
+  const independentBonus = evidence.filter((item) => item.independentVerification).length * 12;
+  const breadthBonus = Math.min(20, new Set(evidence.map((item) => item.type)).size * 4);
+  const rawScore = Math.min(100, Math.round(reliabilityScore + independentBonus + breadthBonus));
+  const weakAreas = [
+    evidence.some((item) => item.independentVerification) ? undefined : "Bağımsız doğrulama zayıf.",
+    session.unlockedEvidenceIds.includes("E10") ? undefined : "Ödeme iddiasının sınırları henüz çapraz kontrol edilmedi."
+  ].filter((item): item is string => Boolean(item));
+  return { score: rawScore, unlockedEvidenceCount: evidence.length, weakAreas };
+}
+
+export function evaluateProsecutionSubmission(
+  caseData: CaseData,
+  session: SessionState,
+  submission: ProsecutionSubmission
+): ProsecutionDecision {
+  const now = new Date().toISOString();
+  const unlocked = new Set(session.unlockedEvidenceIds);
+  const submittedEvidence = caseData.evidence.filter(
+    (evidence) => submission.evidenceIds.includes(evidence.id) && unlocked.has(evidence.id)
+  );
+  const inaccessibleIds = submission.evidenceIds.filter((id) => !unlocked.has(id));
+  const reasons: string[] = [];
+  const componentScores: Record<string, number> = { S1: 0, S2: 0, S3: 0, S4: 0, S5: 0 };
+
+  if (submission.suspectId === canonicalSuspectId && submittedEvidence.some((evidence) => evidence.id === "E04" || evidence.id === "E09")) {
+    componentScores.S1 = 20;
+  }
+  if (submittedEvidence.some((evidence) => evidence.id === "E02" || evidence.id === "E03")) {
+    componentScores.S2 = submittedEvidence.some((evidence) => evidence.id === "E03") ? 20 : 12;
+  }
+  if (submittedEvidence.some((evidence) => evidence.id === "E05")) {
+    componentScores.S3 = submission.gaps || submission.contradictionAnalysis ? 16 : 8;
+  }
+  if (submittedEvidence.some((evidence) => evidence.independentVerification)) {
+    componentScores.S4 = 20;
+  } else if (submittedEvidence.length >= 3 && submission.gaps) {
+    componentScores.S4 = 10;
+  }
+  if (submission.contradictionAnalysis || submission.gaps) {
+    componentScores.S5 = 18;
+  }
+
+  let score = Object.values(componentScores).reduce((sum, value) => sum + value, 0);
+  if (submission.suspectId !== canonicalSuspectId) {
+    reasons.push("Yanlış şüpheli seçildi.");
+    score = Math.min(score, 30);
+  }
+  if (inaccessibleIds.length > 0) {
+    reasons.push(`Erişilmemiş veya uydurma delil sunuldu: ${inaccessibleIds.join(", ")}.`);
+    score = Math.min(score, 30);
+  }
+  if (submittedEvidence.length < 3) {
+    reasons.push("En az üç erişilmiş dayanak delil sunulmadı.");
+    score = Math.min(score, 44);
+  }
+  if (!submission.gaps && !submission.contradictionAnalysis) {
+    reasons.push("Çelişki veya eksik doğrulama analizi açıklanmadı.");
+  }
+
+  const outcome =
+    score >= 75 && reasons.length === 0
+      ? "accepted_for_further_action"
+      : score >= 45 && submission.suspectId === canonicalSuspectId && inaccessibleIds.length === 0
+        ? "returned_for_more_evidence"
+        : "rejected";
+
+  if (outcome === "accepted_for_further_action") {
+    reasons.push("Dosya ileri incelemeye alınır; bu sonuç suçluluğun kesinleşmesi değildir.");
+  } else if (outcome === "returned_for_more_evidence") {
+    reasons.push("Dosya makul bağlantılar içeriyor ancak ek araştırma gerektiriyor.");
+  }
+
+  return {
+    id: crypto.randomUUID(),
+    outcome,
+    score,
+    reasons,
+    componentScores,
+    createdAt: now
+  };
+}
+
+function conditionSatisfied(condition: UnlockCondition | null, session: SessionState): boolean {
+  if (condition === null) return true;
+  const unlocked = new Set(session.unlockedEvidenceIds);
+  const actions = new Set(session.actions);
+  if (condition.evidenceIds?.some((evidenceId) => !unlocked.has(evidenceId))) return false;
+  if (condition.action && !actions.has(condition.action)) return false;
+  if (condition.event && !actions.has(condition.event)) return false;
+  if (condition.characterId && !actions.has(`asked:${condition.characterId}:${condition.questionTopic ?? ""}`)) {
+    return false;
+  }
+  if (
+    condition.interviewCompleted &&
+    !session.completedInterviews.some(
+      (interview) =>
+        interview.characterId === condition.interviewCompleted &&
+        (condition.questionTopic === undefined || interview.topic === condition.questionTopic)
+    )
+  ) {
+    return false;
+  }
+  if (
+    condition.questionTopic &&
+    !session.actions.some((action) => action.endsWith(`:${condition.questionTopic}`))
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function addActionMarkers(session: SessionState, action: PlayerAction): SessionState {
+  const actions = new Set(session.actions);
+  let completedInterviews = session.completedInterviews;
+  let interrogations = session.interrogations;
+  let questionHistory = session.questionHistory;
+  switch (action.type) {
+    case "load_case":
+      actions.add("load_case");
+      break;
+    case "visit_location":
+      actions.add(`visited:${action.locationId}`);
+      break;
+    case "start_interview":
+      actions.add(`interview_started:${action.characterId}`);
+      if (!interrogations.some((interrogation) => interrogation.characterId === action.characterId)) {
+        interrogations = [...interrogations, { characterId: action.characterId, startedAt: new Date().toISOString(), questionTopics: [] }];

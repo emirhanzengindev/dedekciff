@@ -1,0 +1,207 @@
+{
+    "caseId":  "case-002",
+    "contentType":  "documentary_adaptation_gameplay_data",
+    "characters":  [
+                       {
+                           "id":  "char-victim",
+                           "name":  "Megan Landowski",
+                           "role":  "victim",
+                           "fictional":  false,
+                           "initiallyAvailable":  false,
+                           "unlockCondition":  {
+                                                   "event":  "victim_never_interviewable"
+                                               },
+                           "knows":  [
+                                         "Belgeselde aktarılan arka plan özeti (dansla ilgilenen lise öğrencisi)",
+                                         "Okul ve sosyal çevre bağlamı"
+                                     ],
+                           "doesNotKnow":  [
+                                               "Soruşturmanın bulguları",
+                                               "Diğer kişilerin özel konuşmaları",
+                                               "Laboratuvar sonuçları"
+                                           ],
+                           "initialStatement":  "Bu karakter belgeseldeki mağdurun arka plan özeti içindir; sorgulanamaz.",
+                           "truthPolicy":  "Mağdur oynanabilir değildir ve sorgulanamaz. Bu kayıt yalnızca belgesel anlatımındaki arka plan özetini yansıtır; yeni olgu üretilmez.",
+                           "knowledgePolicy":  {
+                                                   "answerOnlyFrom":  "unlocked_evidence_and_character_direct_knowledge",
+                                                   "mustSeparateObservationFromInference":  true,
+                                                   "mayInventFacts":  false,
+                                                   "mayRevealLockedEvidence":  false,
+                                                   "mayRevealOtherCharactersPrivateKnowledge":  false
+                                               },
+                           "availableWhen":  "Mağdur hiçbir koşulda oynanabilir veya sorgulanabilir yapılmaz; unlockCondition kasıtlı olarak hiçbir zaman sağlanmaz"
+                       },
+                       {
+                           "id":  "char-convicted",
+                           "name":  "Robert Burns/Barns (transkriptteki yazım belirsiz)",
+                           "role":  "convicted_person_in_documentary",
+                           "fictional":  false,
+                           "initiallyAvailable":  false,
+                           "unlockCondition":  {
+                                                   "evidenceIds":  [
+                                                                       "E09"
+                                                                   ]
+                                               },
+                           "knows":  [
+                                         "Okul çevresinden eski tanışıklık anlatımı",
+                                         "Sakız örneği olayı anlatımı",
+                                         "Dedektif McDaniel\u0027e verdiği ifade anlatımı (maskeli saldırgan iddiası)"
+                                     ],
+                           "doesNotKnow":  [
+                                               "Laboratuvarın sayısal veya teknik ayrıntıları",
+                                               "Bağımsız olarak doğrulanmış adli bulgular",
+                                               "Diğer kişilerin özel konuşmaları"
+                                           ],
+                           "initialStatement":  "Belgesel anlatımına göre okul çevresinden tanınan bu kişi, başlangıçta kendisini evde uyuduğunu söylemiş; daha sonra maskeli bir saldırgan anlatımı aktarmıştır. Bu anlatımlar yalnızca belgesel iddiasıdır.",
+                           "truthPolicy":  "Yalnızca belgesel transkriptindeki anlatımlar aktarılır; ad-soyad yazımı belirsizliği korunur. Anlatım ile bağımsız bulgu arasındaki çelişkiler açıkça belirtilir. Yeni mazeret veya delil icat edilmez.",
+                           "topicAnswers":  {
+                                                "prior_acquaintance":  "Belgesel, Megan ile okul çevresinden eski bir tanışıklık anlatıldığını aktarır.",
+                                                "dna_sample_incident":  "Belgesel, bu kişinin verdiği sakız örneğinin kendisine ait olmadığının anlaşıldığını aktarır.",
+                                                "interview_account":  "Belgesel, dedektife maskeli bir saldırgan anlatımı verildiğini, üst kattaki mücadele ve bant bulgularıyla çeliştiğini aktarır."
+                                            },
+                           "knowledgePolicy":  {
+                                                   "answerOnlyFrom":  "unlocked_evidence_and_character_direct_knowledge",
+                                                   "mustSeparateObservationFromInference":  true,
+                                                   "mayInventFacts":  false,
+                                                   "mayRevealLockedEvidence":  false,
+                                                   "mayRevealOtherCharactersPrivateKnowledge":  false
+                                               },
+                           "availableWhen":  "unlockCondition is satisfied on the server; never infer availability from a client request"
+                       },
+                       {
+                           "id":  "char-initial-suspect",
+                           "name":  "Keith Camp",
+                           "role":  "initial_suspect_ruled_out",
+                           "fictional":  false,
+                           "initiallyAvailable":  true,
+                           "unlockCondition":  null,
+                           "knows":  [
+                                         "Megan ile tanışıklık anlatımı",
+                                         "Annenin reddettiği ilişki iddiası bağlamı"
+                                     ],
+                           "doesNotKnow":  [
+                                               "Laboratuvarın sayısal veya teknik ayrıntıları",
+                                               "Soruşturmanın diğer şüphelilere ilişkin bulguları",
+                                               "Diğer kişilerin özel konuşmaları"
+                                           ],
+                           "initialStatement":  "Belgesel anlatımına göre Megan\u0027ı tanıdığını söyleyen bu kişi, DNA karşılaştırmasıyla elenmiştir. Bu bilgi yalnızca belgesel iddiasıdır.",
+                           "truthPolicy":  "Yalnızca belgesel transkriptindeki anlatım aktarılır; elenme bilgisi bağımsız laboratuvar belgesi gibi sunulmaz.",
+                           "knowledgePolicy":  {
+                                                   "answerOnlyFrom":  "unlocked_evidence_and_character_direct_knowledge",
+                                                   "mustSeparateObservationFromInference":  true,
+                                                   "mayInventFacts":  false,
+                                                   "mayRevealLockedEvidence":  false,
+                                                   "mayRevealOtherCharactersPrivateKnowledge":  false
+                                               },
+                           "availableWhen":  "unlockCondition is satisfied on the server; never infer availability from a client request"
+                       },
+                       {
+                           "id":  "char-family-ruled-out",
+                           "name":  "Üvey baba (adı transkriptte belirtilmemiş)",
+                           "role":  "family_member_ruled_out",
+                           "fictional":  false,
+                           "initiallyAvailable":  true,
+                           "unlockCondition":  null,
+                           "knows":  [
+                                         "Megan\u0027ı evde bulma ve ilk bildirim anlatımı",
+                                         "Kendi DNA örneğini verme ve elenme anlatımı"
+                                     ],
+                           "doesNotKnow":  [
+                                               "Laboratuvarın sayısal veya teknik ayrıntıları",
+                                               "Soruşturmanın diğer bulguları",
+                                               "Diğer kişilerin özel konuşmaları"
+                                           ],
+                           "initialStatement":  "Belgesel anlatımına göre eve geldiğinde Megan\u0027ı bulan ve durumu bildiren bu kişi, DNA karşılaştırmasıyla elenmiştir. Bu bilgi yalnızca belgesel iddiasıdır.",
+                           "truthPolicy":  "Yalnızca belgesel transkriptindeki anlatım aktarılır; elenme bilgisi bağımsız laboratuvar belgesi gibi sunulmaz.",
+                           "knowledgePolicy":  {
+                                                   "answerOnlyFrom":  "unlocked_evidence_and_character_direct_knowledge",
+                                                   "mustSeparateObservationFromInference":  true,
+                                                   "mayInventFacts":  false,
+                                                   "mayRevealLockedEvidence":  false,
+                                                   "mayRevealOtherCharactersPrivateKnowledge":  false
+                                               },
+                           "availableWhen":  "unlockCondition is satisfied on the server; never infer availability from a client request"
+                       },
+                       {
+                           "id":  "char-mcdaniel",
+                           "name":  "Dedektif McDaniel",
+                           "role":  "investigator",
+                           "fictional":  false,
+                           "initiallyAvailable":  true,
+                           "unlockCondition":  null,
+                           "knows":  [
+                                         "Olay yeri değerlendirmesi anlatımı",
+                                         "Reddedilme üzerine olası motivasyon teorisi (belgeseldeki teori olarak)"
+                                     ],
+                           "doesNotKnow":  [
+                                               "Laboratuvarın sayısal veya teknik ayrıntıları",
+                                               "Kesinleşmiş motivasyon (teori, olgu değildir)",
+                                               "Diğer kişilerin özel konuşmaları"
+                                           ],
+                           "initialStatement":  "Belgesel anlatımındaki soruşturmacı değerlendirmesine göre olay yeri ve bulgular incelenmiştir. Motivasyon konusundaki reddedilme anlatımı bir teoridir, kanıtlanmış olgu değildir.",
+                           "truthPolicy":  "Reddedilme motivasyonu her zaman teori olarak etiketlenir. Laboratuvar ayrıntısı uydurulmaz; yalnızca transkriptte geçen anlatım aktarılır.",
+                           "knowledgePolicy":  {
+                                                   "mayRevealOtherCharactersPrivateKnowledge":  false,
+                                                   "answerOnlyFrom":  "unlocked_evidence_and_character_direct_knowledge",
+                                                   "mustSeparateObservationFromInference":  true,
+                                                   "mayRevealLockedEvidence":  false,
+                                                   "mayInventFacts":  false
+                                               },
+                           "availableWhen":  "unlockCondition is satisfied on the server; never infer availability from a client request"
+                       },
+                       {
+                           "id":  "char-morris",
+                           "name":  "Dedektif Morris",
+                           "role":  "investigator",
+                           "fictional":  false,
+                           "initiallyAvailable":  true,
+                           "unlockCondition":  null,
+                           "knows":  [
+                                         "Mağdur arka plan özeti anlatımı",
+                                         "Şüpheli ifadesi değerlendirmesi anlatımı"
+                                     ],
+                           "doesNotKnow":  [
+                                               "Laboratuvarın sayısal veya teknik ayrıntıları",
+                                               "Kesinleşmiş motivasyon",
+                                               "Diğer kişilerin özel konuşmaları"
+                                           ],
+                           "initialStatement":  "Belgesel anlatımındaki soruşturmacı değerlendirmesine göre mağdur arka planı ve şüpheli ifadesi incelenmiştir. Ayrıntılar yalnızca belgesel iddiasıdır.",
+                           "truthPolicy":  "Yalnızca belgesel transkriptindeki anlatım aktarılır; değerlendirme kesin hüküm gibi sunulmaz.",
+                           "knowledgePolicy":  {
+                                                   "mayRevealOtherCharactersPrivateKnowledge":  false,
+                                                   "answerOnlyFrom":  "unlocked_evidence_and_character_direct_knowledge",
+                                                   "mustSeparateObservationFromInference":  true,
+                                                   "mayRevealLockedEvidence":  false,
+                                                   "mayInventFacts":  false
+                                               },
+                           "availableWhen":  "unlockCondition is satisfied on the server; never infer availability from a client request"
+                       },
+                       {
+                           "id":  "char-heather",
+                           "name":  "Heather",
+                           "role":  "friend_witness",
+                           "fictional":  false,
+                           "initiallyAvailable":  true,
+                           "unlockCondition":  null,
+                           "knows":  [
+                                         "Okul ve sosyal çevre anlatımı",
+                                         "Robert ile eski tanışıklık anlatımı"
+                                     ],
+                           "doesNotKnow":  [
+                                               "Laboratuvar sonuçları",
+                                               "Olay yeri bulgularının ayrıntıları",
+                                               "Diğer kişilerin özel konuşmaları"
+                                           ],
+                           "initialStatement":  "Belgesel anlatımına göre Megan\u0027ın arkadaşı olan bu kişi, okul çevresi ve eski tanışıklıklar hakkında bilgi verir. Bu bilgi yalnızca belgesel iddiasıdır.",
+                           "truthPolicy":  "Yalnızca belgesel transkriptindeki anlatım aktarılır; görmediği olaylar doğrulanmaz.",
+                           "knowledgePolicy":  {
+                                                   "mayRevealOtherCharactersPrivateKnowledge":  false,
+                                                   "answerOnlyFrom":  "unlocked_evidence_and_character_direct_knowledge",
+                                                   "mustSeparateObservationFromInference":  true,
+                                                   "mayRevealLockedEvidence":  false,
+                                                   "mayInventFacts":  false
+                                               },
+                           "availableWhen":  "unlockCondition is satisfied on the server; never infer availability from a client request"
+                       }
+                   ]
+}

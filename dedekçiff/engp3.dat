@@ -1,0 +1,85 @@
+    }
+    if (witnessLink) {
+      return reply("requires_investigation", "Mekânda bulunduğuma dair bir tanık beyanı olduğunu görüyorum. Bu iddiayı ayrıntılı yanıtlamam için tanık ifadesini ve diğer kayıtları birlikte değerlendirin.", [witnessLink.id], 0.7);
+    }
+    return reply("requires_investigation", "Bu konuya ilişkin dosyada henüz doğrulanmış bir kayıt görmüyorum. Önce tanık beyanlarını ve diğer dayanakları araştırın.", [], 0.65);
+  }
+  if (character.id === "C03" && intent === "scene_objects") {
+    if (showEvidence) {
+      return reply("answered", "Mekânda kaplar ve örtüler gördüm. Kimin yerleştirdiğini ya da ne amaçla kullanıldığını bilmiyorum.", [showEvidence.id], 0.8);
+    }
+  }
+  if (character.id === "C03" && intent === "promise") {
+    return reply("requires_investigation", "Altın vaadi hakkında duyduklarımı doğrulayan bir kayıt sunamam; ben yalnızca mekânda gördüklerimi anlatabilirim.", showEvidence ? [showEvidence.id] : [], 0.62);
+  }
+  const secondComplaint = accessibleEvidence.find((evidence) => evidence.id === "E06");
+  if (character.id === "C04" && secondComplaint) {
+    return reply("answered", secondComplaint.facts.join(" "), [secondComplaint.id], 0.75);
+  }
+  if (character.id === "C02" && paymentIntent) {
+    const statement = accessibleEvidence.find((evidence) => evidence.id === "E09");
+    return statement
+      ? reply("requires_investigation", "E09’da gösteriyi düzenlediğimi kabul ediyor, gerçek altın teslim etme taahhüdünü reddediyorum. Bu tutanak ödeme tutarı veya alıcının kimliğini doğrulamıyor.", [statement.id], 0.76)
+      : reply("requires_investigation", "Ödeme iddiasına ilişkin sorgu tutanağı henüz dosyada yok. Önce gerekli kayıtları açıp sorguyu tamamlamak gerekiyor.", [], 0.66);
+  }
+  if (normalized.includes("banka") || normalized.includes("transfer") || normalized.includes("kesin")) {
+    return reply(
+      "requires_investigation",
+      "Mevcut erişilebilir dosyada bağımsız ödeme doğrulaması yok; bu konu ek araştırma gerektirir.",
+      support,
+      0.86
+    );
+  }
+  if (normalized.includes("murat") && (normalized.includes("para") || normalized.includes("ödeme"))) {
+    return reply(
+      "requires_investigation",
+      "Erişilebilir tanık ve inceleme verisi ödeme teslimini kesin olgu olarak kurmuyor.",
+      support,
+      0.84
+    );
+  }
+  const witnessEvidence = accessibleEvidence.find((evidence) => evidence.id === "E04");
+  if (character.id === "C03" && witnessEvidence && (intent === "suspect_presence" || intent === "who_invited")) {
+    return reply("answered", "Murat’ı gösteri günü mekânda gördüm. Para alışverişini doğrudan görmedim.", [witnessEvidence.id], 0.78);
+  }
+  const suspectStatement = accessibleEvidence.find((evidence) => evidence.id === "E09");
+  if (character.id === "C02" && suspectStatement) {
+    return reply("answered", suspectStatement.facts.join(" "), [suspectStatement.id], 0.72);
+  }
+
+  const fallback = character.initialStatement ?? "Bu konuda yalnızca kendi bildiklerimi aktarabilirim.";
+  return reply("unknown", fallback, [], 0.55);
+}
+
+export function calculateCaseStrength(caseData: CaseData, session: SessionState) {
+  const evidence = getAccessibleEvidence(caseData, session);
+  const reliabilityScore = evidence.reduce((sum, item) => sum + item.reliability * 7, 0);
+  const independentBonus = evidence.filter((item) => item.independentVerification).length * 12;
+  const breadthBonus = Math.min(20, new Set(evidence.map((item) => item.type)).size * 4);
+  const rawScore = Math.min(100, Math.round(reliabilityScore + independentBonus + breadthBonus));
+  const weakAreas = [
+    evidence.some((item) => item.independentVerification) ? undefined : "Bağımsız doğrulama zayıf.",
+    session.unlockedEvidenceIds.includes("E10") ? undefined : "Ödeme iddiasının sınırları henüz çapraz kontrol edilmedi."
+  ].filter((item): item is string => Boolean(item));
+  return { score: rawScore, unlockedEvidenceCount: evidence.length, weakAreas };
+}
+
+export function evaluateProsecutionSubmission(
+  caseData: CaseData,
+  session: SessionState,
+  submission: ProsecutionSubmission
+): ProsecutionDecision {
+  const now = new Date().toISOString();
+  const unlocked = new Set(session.unlockedEvidenceIds);
+  const submittedEvidence = caseData.evidence.filter(
+    (evidence) => submission.evidenceIds.includes(evidence.id) && unlocked.has(evidence.id)
+  );
+  const inaccessibleIds = submission.evidenceIds.filter((id) => !unlocked.has(id));
+  const reasons: string[] = [];
+  const componentScores: Record<string, number> = { S1: 0, S2: 0, S3: 0, S4: 0, S5: 0 };
+
+  if (submission.suspectId === canonicalSuspectId && submittedEvidence.some((evidence) => evidence.id === "E04" || evidence.id === "E09")) {
+    componentScores.S1 = 20;
+  }
+  if (submittedEvidence.some((evidence) => evidence.id === "E02" || evidence.id === "E03")) {
+    componentScores.S2 = submittedEvidence.some((evidence) => evidence.id === "E03") ? 20 : 12;

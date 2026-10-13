@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Cil Cil Altinlar",
+    "slug": "case-001-game",
+    "scheme": "case001",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "plugins": [
+      "expo-router",
+      "expo-asset",
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      }
+    }
+  }
+}

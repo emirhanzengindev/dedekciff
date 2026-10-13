@@ -1,0 +1,28 @@
+{
+  "name": "@case-001/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/server.ts",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@case-001/case-engine": "workspace:*",
+    "@case-001/shared": "workspace:*",
+    "@case-001/validation": "workspace:*",
+    "@fastify/cors": "10.0.2",
+    "@fastify/rate-limit": "10.2.1",
+    "@fastify/swagger": "9.4.2",
+    "fastify": "5.1.0",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "tsx": "4.19.2",
+    "vitest": "2.1.8"
+  }
+}

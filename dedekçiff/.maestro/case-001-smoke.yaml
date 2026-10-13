@@ -1,0 +1,11 @@
+appId: case001
+---
+- launchApp
+- tapOn:
+    id: "start-case"
+- tapOn: "Benzer"
+- tapOn: "Leyla Karaca"
+- tapOn: "Soru yaz"
+- inputText: "Olay gunu nerede oldugunu anlat."
+- tapOn: "Sor"
+- tapOn: "Savcilik"

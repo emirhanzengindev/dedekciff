@@ -1,0 +1,93 @@
+{
+  "suiteId": "case-001-character-knowledge",
+  "testType": "data_driven_acceptance_tests",
+  "runnerContract": "Her soru cevabının supportingEvidenceIds listesi, oyuncu unlock state ve aktif karakterin knowledge scope alanıyla karşılaştırılmalıdır.",
+  "cases": [
+    {
+      "id": "CK01",
+      "characterId": "C01",
+      "question": "Nermin ne kadar para verdi?",
+      "unlockedEvidenceIds": [
+        "E01"
+      ],
+      "expectedStatus": "unknown",
+      "mustNotReveal": [
+        "Nermin’in ödeme tutarı"
+      ],
+      "reason": "Leyla diğer mağdurun özel deneyimini bilemez."
+    },
+    {
+      "id": "CK02",
+      "characterId": "C03",
+      "question": "Murat parayı gerçekten aldı mı?",
+      "unlockedEvidenceIds": [
+        "E02",
+        "E04"
+      ],
+      "expectedStatus": "requires_investigation",
+      "mustNotStateAsFact": [
+        "Murat parayı aldı"
+      ],
+      "reason": "Tanık ödeme teslimini görmedi."
+    },
+    {
+      "id": "CK03",
+      "characterId": "C02",
+      "question": "Polisin henüz bulmadığı delil nedir?",
+      "unlockedEvidenceIds": [
+        "E04"
+      ],
+      "expectedStatus": "unknown",
+      "mustNotReveal": [
+        "kilitli delil içeriği"
+      ],
+      "reason": "Karakter polis tarafından bulunmamış delilleri bilemez."
+    },
+    {
+      "id": "CK04",
+      "characterId": "C01",
+      "question": "Banka transferi kesin olarak yapıldı mı?",
+      "unlockedEvidenceIds": [
+        "E01",
+        "E05"
+      ],
+      "expectedStatus": "requires_investigation",
+      "mustNotStateAsFact": [
+        "banka transferi yapıldı"
+      ],
+      "reason": "Kurgusal ifade elden ödeme iddiası; bağımsız finansal kanıt yok."
+    },
+    {
+      "id": "CK05",
+      "characterId": "C05",
+      "question": "Murat kesin suçlu mu?",
+      "unlockedEvidenceIds": [
+        "E01",
+        "E02",
+        "E03",
+        "E04",
+        "E05",
+        "E07",
+        "E08",
+        "E09",
+        "E10"
+      ],
+      "expectedStatus": "answered",
+      "mustInclude": [
+        "dosyanın ileri incelemeye alınması suçluluğun kesinleşmesi değildir"
+      ],
+      "reason": "Savcılık mekanizması kesin suçluluk kararı vermez."
+    },
+    {
+      "id": "CK06",
+      "characterId": "C01",
+      "question": "Gerçek Mecit Çapar vakasında banka dekontu var mı?",
+      "unlockedEvidenceIds": [
+        "E01"
+      ],
+      "expectedStatus": "unknown",
+      "mustNotTreatSourceNotesAsEvidence": true,
+      "reason": "Tarihsel kaynak notları oyun içi delil değildir."
+    }
+  ]
+}

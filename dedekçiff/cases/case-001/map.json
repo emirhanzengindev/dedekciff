@@ -1,0 +1,111 @@
+{
+  "caseId": "case-001",
+  "contentType": "fictional_gameplay_map",
+  "version": "1.0.0",
+  "fictional": true,
+  "initialLocationIds": [
+    "police_station"
+  ],
+  "locations": [
+    {
+      "id": "police_station",
+      "name": "Gümüştepe Polis Merkezi",
+      "type": "police_station",
+      "initiallyVisible": true,
+      "accessible": true,
+      "unlockCondition": null,
+      "icon": "police-station",
+      "description": "Başlangıç noktası. İlk şikâyet kaydı burada açılır."
+    },
+    {
+      "id": "victim_home",
+      "name": "Leyla’nın Evi",
+      "type": "residence",
+      "initiallyVisible": false,
+      "accessible": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E01"
+        ]
+      },
+      "icon": "home",
+      "description": "Leyla ile ayrıntılı görüşme ve hatırladığı iletişim ayrıntıları."
+    },
+    {
+      "id": "show_room",
+      "name": "Gösteri Alanı",
+      "type": "scene",
+      "initiallyVisible": false,
+      "accessible": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E01"
+        ],
+        "interviewCompleted": "C01",
+        "questionTopic": "show_details"
+      },
+      "icon": "search",
+      "description": "Kurgusal sahne gözlemi ve nesne incelemesi."
+    },
+    {
+      "id": "suspect_home",
+      "name": "Murat’ın Evi",
+      "type": "residence",
+      "initiallyVisible": false,
+      "accessible": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E04"
+        ]
+      },
+      "icon": "home-map-marker",
+      "description": "Kurgusal şüpheli konutu. Tanık bağlantısı açılmadan haritada gösterilmez; herhangi bir gerçek adresi temsil etmez."
+    },
+    {
+      "id": "bank",
+      "name": "Finansal Araştırma Masası",
+      "type": "investigation_desk",
+      "initiallyVisible": false,
+      "accessible": false,
+      "unlockCondition": {
+        "evidenceIds": [
+          "E05"
+        ]
+      },
+      "icon": "landmark",
+      "description": "Gerçek banka kaydı göstermez; kurgusal dosyada ödeme iddiasının doğrulama sınırını gösterir."
+    }
+  ],
+  "visibilityRules": [
+    {
+      "triggerEvidenceId": "E01",
+      "showLocationIds": [
+        "victim_home"
+      ]
+    },
+    {
+      "triggerEvidenceId": "E02",
+      "showLocationIds": [
+        "show_room"
+      ]
+    },
+    {
+      "triggerEvidenceId": "E05",
+      "showLocationIds": [
+        "bank"
+      ]
+    },
+    {
+      "triggerEvidenceId": "E04",
+      "showLocationIds": [
+        "suspect_home"
+      ]
+    }
+  ],
+  "securityRules": [
+    "Harita görünürlüğü ve erişimi sunucuda hesaplanır.",
+    "İstemci locationId göndererek kilidi aşamaz.",
+    "Konumun görünmesi, o konumdaki bütün delillerin açıldığı anlamına gelmez.",
+    "Harita ve tüm deliller kurgusaldır; gerçek Mecit Çapar dosyasını temsil etmez."
+  ]
+}

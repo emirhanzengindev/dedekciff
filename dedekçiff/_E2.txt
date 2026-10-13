@@ -1,0 +1,170 @@
+251:     if (witnessLink && witnessInterviewed && repeatedQuestion) {
+252:       return reply(
+253:         "answered",
+254:         "Evet, gösteri günü mekândaydım. Cem de beni orada gördüğünü ifade etti. Bu, mekânda bulunduğumu destekler; ödeme yapıldığını veya kimin düzenlediğini tek başına kanıtlamaz.",
+255:         [witnessLink.id],
+256:         0.83
+257:       );
+258:     }
+259:     if (witnessLink) {
+260:       return reply("requires_investigation", "Mekânda bulunduğuma dair bir tanık beyanı olduğunu görüyorum. Bu iddiayı ayrıntılı yanıtlamam için tanık ifadesini ve diğer kayıtları birlikte değerlendirin.", [witnessLink.id], 0.7);
+261:     }
+262:     return reply("requires_investigation", "Bu konuya ilişkin dosyada henüz doğrulanmış bir kayıt görmüyorum. Önce tanık beyanlarını ve diğer dayanakları araştırın.", [], 0.65);
+263:   }
+264:   if (character.id === "C03" && intent === "scene_objects") {
+265:     if (showEvidence) {
+266:       return reply("answered", "Mekânda kaplar ve örtüler gördüm. Kimin yerleştirdiğini ya da ne amaçla kullanıldığını bilmiyorum.", [showEvidence.id], 0.8);
+267:     }
+268:   }
+269:   if (character.id === "C03" && intent === "promise") {
+270:     return reply("requires_investigation", "Altın vaadi hakkında duyduklarımı doğrulayan bir kayıt sunamam; ben yalnızca mekânda gördüklerimi anlatabilirim.", showEvidence ? [showEvidence.id] : [], 0.62);
+271:   }
+272:   const secondComplaint = accessibleEvidence.find((evidence) => evidence.id === "E06");
+273:   if (character.id === "C04" && secondComplaint) {
+274:     return reply("answered", secondComplaint.facts.join(" "), [secondComplaint.id], 0.75);
+275:   }
+276:   if (character.id === "C02" && paymentIntent) {
+277:     const statement = accessibleEvidence.find((evidence) => evidence.id === "E09");
+278:     return statement
+279:       ? reply("requires_investigation", "E09’da gösteriyi düzenlediğimi kabul ediyor, gerçek altın teslim etme taahhüdünü reddediyorum. Bu tutanak ödeme tutarı veya alıcının kimliğini doğrulamıyor.", [statement.id], 0.76)
+280:       : reply("requires_investigation", "Ödeme iddiasına ilişkin sorgu tutanağı henüz dosyada yok. Önce gerekli kayıtları açıp sorguyu tamamlamak gerekiyor.", [], 0.66);
+281:   }
+282:   if (normalized.includes("banka") || normalized.includes("transfer") || normalized.includes("kesin")) {
+283:     return reply(
+284:       "requires_investigation",
+285:       "Mevcut erişilebilir dosyada bağımsız ödeme doğrulaması yok; bu konu ek araştırma gerektirir.",
+286:       support,
+287:       0.86
+288:     );
+289:   }
+290:   if (normalized.includes("murat") && (normalized.includes("para") || normalized.includes("ödeme"))) {
+291:     return reply(
+292:       "requires_investigation",
+293:       "Erişilebilir tanık ve inceleme verisi ödeme teslimini kesin olgu olarak kurmuyor.",
+294:       support,
+295:       0.84
+296:     );
+297:   }
+298:   const witnessEvidence = accessibleEvidence.find((evidence) => evidence.id === "E04");
+299:   if (character.id === "C03" && witnessEvidence && (intent === "suspect_presence" || intent === "who_invited")) {
+300:     return reply("answered", "Murat’ı gösteri günü mekânda gördüm. Para alışverişini doğrudan görmedim.", [witnessEvidence.id], 0.78);
+301:   }
+302:   const suspectStatement = accessibleEvidence.find((evidence) => evidence.id === "E09");
+303:   if (character.id === "C02" && suspectStatement) {
+304:     return reply("answered", suspectStatement.facts.join(" "), [suspectStatement.id], 0.72);
+305:   }
+306: 
+307:   const fallback = character.initialStatement ?? "Bu konuda yalnızca kendi bildiklerimi aktarabilirim.";
+308:   return reply("unknown", fallback, [], 0.55);
+309: }
+310: 
+311: export function calculateCaseStrength(caseData: CaseData, session: SessionState) {
+312:   const evidence = getAccessibleEvidence(caseData, session);
+313:   const reliabilityScore = evidence.reduce((sum, item) => sum + item.reliability * 7, 0);
+314:   const independentBonus = evidence.filter((item) => item.independentVerification).length * 12;
+315:   const breadthBonus = Math.min(20, new Set(evidence.map((item) => item.type)).size * 4);
+316:   const rawScore = Math.min(100, Math.round(reliabilityScore + independentBonus + breadthBonus));
+317:   const weakAreas = [
+318:     evidence.some((item) => item.independentVerification) ? undefined : "Bağımsız doğrulama zayıf.",
+319:     session.unlockedEvidenceIds.includes("E10") ? undefined : "Ödeme iddiasının sınırları henüz çapraz kontrol edilmedi."
+320:   ].filter((item): item is string => Boolean(item));
+321:   return { score: rawScore, unlockedEvidenceCount: evidence.length, weakAreas };
+322: }
+323: 
+324: export function evaluateProsecutionSubmission(
+325:   caseData: CaseData,
+326:   session: SessionState,
+327:   submission: ProsecutionSubmission
+328: ): ProsecutionDecision {
+329:   const now = new Date().toISOString();
+330:   const unlocked = new Set(session.unlockedEvidenceIds);
+331:   const submittedEvidence = caseData.evidence.filter(
+332:     (evidence) => submission.evidenceIds.includes(evidence.id) && unlocked.has(evidence.id)
+333:   );
+334:   const inaccessibleIds = submission.evidenceIds.filter((id) => !unlocked.has(id));
+335:   const reasons: string[] = [];
+336:   const componentScores: Record<string, number> = { S1: 0, S2: 0, S3: 0, S4: 0, S5: 0 };
+337: 
+338:   if (submission.suspectId === canonicalSuspectId && submittedEvidence.some((evidence) => evidence.id === "E04" || evidence.id === "E09")) {
+339:     componentScores.S1 = 20;
+340:   }
+341:   if (submittedEvidence.some((evidence) => evidence.id === "E02" || evidence.id === "E03")) {
+342:     componentScores.S2 = submittedEvidence.some((evidence) => evidence.id === "E03") ? 20 : 12;
+343:   }
+344:   if (submittedEvidence.some((evidence) => evidence.id === "E05")) {
+345:     componentScores.S3 = submission.gaps || submission.contradictionAnalysis ? 16 : 8;
+346:   }
+347:   if (submittedEvidence.some((evidence) => evidence.independentVerification)) {
+348:     componentScores.S4 = 20;
+349:   } else if (submittedEvidence.length >= 3 && submission.gaps) {
+350:     componentScores.S4 = 10;
+351:   }
+352:   if (submission.contradictionAnalysis || submission.gaps) {
+353:     componentScores.S5 = 18;
+354:   }
+355: 
+356:   let score = Object.values(componentScores).reduce((sum, value) => sum + value, 0);
+357:   if (submission.suspectId !== canonicalSuspectId) {
+358:     reasons.push("Yanlış şüpheli seçildi.");
+359:     score = Math.min(score, 30);
+360:   }
+361:   if (inaccessibleIds.length > 0) {
+362:     reasons.push(`Erişilmemiş veya uydurma delil sunuldu: ${inaccessibleIds.join(", ")}.`);
+363:     score = Math.min(score, 30);
+364:   }
+365:   if (submittedEvidence.length < 3) {
+366:     reasons.push("En az üç erişilmiş dayanak delil sunulmadı.");
+367:     score = Math.min(score, 44);
+368:   }
+369:   if (!submission.gaps && !submission.contradictionAnalysis) {
+370:     reasons.push("Çelişki veya eksik doğrulama analizi açıklanmadı.");
+371:   }
+372: 
+373:   const outcome =
+374:     score >= 75 && reasons.length === 0
+375:       ? "accepted_for_further_action"
+376:       : score >= 45 && submission.suspectId === canonicalSuspectId && inaccessibleIds.length === 0
+377:         ? "returned_for_more_evidence"
+378:         : "rejected";
+379: 
+380:   if (outcome === "accepted_for_further_action") {
+381:     reasons.push("Dosya ileri incelemeye alınır; bu sonuç suçluluğun kesinleşmesi değildir.");
+382:   } else if (outcome === "returned_for_more_evidence") {
+383:     reasons.push("Dosya makul bağlantılar içeriyor ancak ek araştırma gerektiriyor.");
+384:   }
+385: 
+386:   return {
+387:     id: crypto.randomUUID(),
+388:     outcome,
+389:     score,
+390:     reasons,
+391:     componentScores,
+392:     createdAt: now
+393:   };
+394: }
+395: 
+396: function conditionSatisfied(condition: UnlockCondition | null, session: SessionState): boolean {
+397:   if (condition === null) return true;
+398:   const unlocked = new Set(session.unlockedEvidenceIds);
+399:   const actions = new Set(session.actions);
+400:   if (condition.evidenceIds?.some((evidenceId) => !unlocked.has(evidenceId))) return false;
+401:   if (condition.action && !actions.has(condition.action)) return false;
+402:   if (condition.event && !actions.has(condition.event)) return false;
+403:   if (condition.characterId && !actions.has(`asked:${condition.characterId}:${condition.questionTopic ?? ""}`)) {
+404:     return false;
+405:   }
+406:   if (
+407:     condition.interviewCompleted &&
+408:     !session.completedInterviews.some(
+409:       (interview) =>
+410:         interview.characterId === condition.interviewCompleted &&
+411:         (condition.questionTopic === undefined || interview.topic === condition.questionTopic)
+412:     )
+413:   ) {
+414:     return false;
+415:   }
+416:   if (
+417:     condition.questionTopic &&
+418:     !session.actions.some((action) => action.endsWith(`:${condition.questionTopic}`))
+419:   ) {
+420:     return false;

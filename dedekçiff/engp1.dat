@@ -1,0 +1,85 @@
+  caseData: CaseData,
+  session: SessionState,
+  action: PlayerAction
+): UnlockResult {
+  if (action.type === "client_request_unlock") {
+    return {
+      status: "denied",
+      session,
+      newlyUnlockedEvidenceIds: [],
+      reason: "server_only_unlock_evaluation"
+    };
+  }
+
+  const denial = firstDeniedReason(caseData, session, action);
+  if (denial) {
+    return { status: "denied", session: touch(session), newlyUnlockedEvidenceIds: [], reason: denial };
+  }
+
+  let next = addActionMarkers(touch(session), action);
+  const before = new Set(next.unlockedEvidenceIds);
+  next = applyInitialUnlocks(caseData, next);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const evidence of caseData.evidence) {
+      if (!next.unlockedEvidenceIds.includes(evidence.id) && conditionSatisfied(evidence.unlockCondition, next)) {
+        next = appendUniqueEvidence(next, evidence.id);
+        changed = true;
+      }
+    }
+  }
+
+  const newlyUnlockedEvidenceIds = next.unlockedEvidenceIds.filter((id) => !before.has(id));
+  return { status: "applied", session: next, newlyUnlockedEvidenceIds };
+}
+
+export function answerCharacterQuestion(
+  caseData: CaseData,
+  session: SessionState,
+  characterId: Id,
+  question: string
+): CharacterReply {
+  const character = caseData.characters.find((candidate) => candidate.id === characterId);
+  if (!character) {
+    return reply("unknown", "Bu karakter vaka dosyasında bulunmuyor.", [], 1);
+  }
+  const normalized = normalize(question);
+  const support = accessibleSupportingEvidence(caseData, session, normalized, character.id);
+  if (character.id === "C05") {
+    return reply(
+      "answered",
+      "Dosyanın ileri incelemeye alınması suçluluğun kesinleşmesi değildir; yalnızca sunulan kurgusal delillerin araştırmaya değer görüldüğünü belirtir.",
+      support,
+      0.9
+    );
+  }
+  if (!conditionSatisfied(character.unlockCondition, session)) {
+    return reply("locked", "Bu kişiyle görüşmek için önce ilgili araştırma adımı tamamlanmalı.", [], 1);
+  }
+
+  if (normalized.includes("gizli") || normalized.includes("kilitli") || normalized.includes("henüz bulmad")) {
+    return reply("unknown", "Bulunmamış veya erişime açılmamış deliller hakkında bilgi veremem.", [], 0.95);
+  }
+  if (normalized.includes("mecit") || normalized.includes("dekont") || /\bgerçek\b/u.test(normalized)) {
+    return reply(
+      "unknown",
+      "Kaynak notları oyun içi delil değildir; doğrulanmamış gerçek olay iddiaları kesin kanıt gibi kullanılamaz.",
+      [],
+      0.92
+    );
+  }
+  if (character.id === "C01" && normalized.includes("nermin")) {
+    return reply("unknown", "Leyla, Nermin'in ödeme tutarını veya özel görüşmesini doğrulayamaz.", [], 0.9);
+  }
+  const intent = classifyQuestionIntent(question);
+  const accessibleEvidence = getAccessibleEvidence(caseData, session);
+  if (!intent) {
+    const matchingEvidence = findQuestionEvidence(character.id, accessibleEvidence, question);
+    if (matchingEvidence) {
+      return reply("answered", matchingEvidence.facts.join(" "), [matchingEvidence.id], 0.72);
+    }
+    return reply("unknown", "Bu soruyu anlayamadım. Olay günü, seni kimin çağırdığı, gösteride gördüklerin veya ödeme beyanın hakkında sorabilirsin.", [], 0.98);
+  }
+  if (normalized.includes("banka") || normalized.includes("transfer") || normalized.includes("kesin")) {
+    return reply(

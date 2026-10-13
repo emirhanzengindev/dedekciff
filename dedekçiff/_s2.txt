@@ -1,0 +1,205 @@
+301:   }
+302:   const suspectStatement = accessibleEvidence.find((evidence) => evidence.id === "E09");
+303:   if (character.id === "C02" && suspectStatement) {
+304:     return reply("answered", suspectStatement.facts.join(" "), [suspectStatement.id], 0.72);
+305:   }
+306: 
+307:   const fallback = character.initialStatement ?? "Bu konuda yalnızca kendi bildiklerimi aktarabilirim.";
+308:   return reply("unknown", fallback, [], 0.55);
+309: }
+310: 
+311: export function calculateCaseStrength(caseData: CaseData, session: SessionState) {
+312:   const evidence = getAccessibleEvidence(caseData, session);
+313:   const reliabilityScore = evidence.reduce((sum, item) => sum + item.reliability * 7, 0);
+314:   const independentBonus = evidence.filter((item) => item.independentVerification).length * 12;
+315:   const breadthBonus = Math.min(20, new Set(evidence.map((item) => item.type)).size * 4);
+316:   const rawScore = Math.min(100, Math.round(reliabilityScore + independentBonus + breadthBonus));
+317:   const weakAreas = [
+318:     evidence.some((item) => item.independentVerification) ? undefined : "Bağımsız doğrulama zayıf.",
+319:     session.unlockedEvidenceIds.includes("E10") ? undefined : "Ödeme iddiasının sınırları henüz çapraz kontrol edilmedi."
+320:   ].filter((item): item is string => Boolean(item));
+321:   return { score: rawScore, unlockedEvidenceCount: evidence.length, weakAreas };
+322: }
+323: 
+324: export function evaluateProsecutionSubmission(
+325:   caseData: CaseData,
+326:   session: SessionState,
+327:   submission: ProsecutionSubmission
+328: ): ProsecutionDecision {
+329:   const now = new Date().toISOString();
+330:   const unlocked = new Set(session.unlockedEvidenceIds);
+331:   const submittedEvidence = caseData.evidence.filter(
+332:     (evidence) => submission.evidenceIds.includes(evidence.id) && unlocked.has(evidence.id)
+333:   );
+334:   const inaccessibleIds = submission.evidenceIds.filter((id) => !unlocked.has(id));
+335:   const reasons: string[] = [];
+336:   const componentScores: Record<string, number> = { S1: 0, S2: 0, S3: 0, S4: 0, S5: 0 };
+337: 
+338:   if (submission.suspectId === canonicalSuspectId && submittedEvidence.some((evidence) => evidence.id === "E04" || evidence.id === "E09")) {
+339:     componentScores.S1 = 20;
+340:   }
+341:   if (submittedEvidence.some((evidence) => evidence.id === "E02" || evidence.id === "E03")) {
+342:     componentScores.S2 = submittedEvidence.some((evidence) => evidence.id === "E03") ? 20 : 12;
+343:   }
+344:   if (submittedEvidence.some((evidence) => evidence.id === "E05")) {
+345:     componentScores.S3 = submission.gaps || submission.contradictionAnalysis ? 16 : 8;
+346:   }
+347:   if (submittedEvidence.some((evidence) => evidence.independentVerification)) {
+348:     componentScores.S4 = 20;
+349:   } else if (submittedEvidence.length >= 3 && submission.gaps) {
+350:     componentScores.S4 = 10;
+351:   }
+352:   if (submission.contradictionAnalysis || submission.gaps) {
+353:     componentScores.S5 = 18;
+354:   }
+355: 
+356:   let score = Object.values(componentScores).reduce((sum, value) => sum + value, 0);
+357:   if (submission.suspectId !== canonicalSuspectId) {
+358:     reasons.push("Yanlış şüpheli seçildi.");
+359:     score = Math.min(score, 30);
+360:   }
+361:   if (inaccessibleIds.length > 0) {
+362:     reasons.push(`Erişilmemiş veya uydurma delil sunuldu: ${inaccessibleIds.join(", ")}.`);
+363:     score = Math.min(score, 30);
+364:   }
+365:   if (submittedEvidence.length < 3) {
+366:     reasons.push("En az üç erişilmiş dayanak delil sunulmadı.");
+367:     score = Math.min(score, 44);
+368:   }
+369:   if (!submission.gaps && !submission.contradictionAnalysis) {
+370:     reasons.push("Çelişki veya eksik doğrulama analizi açıklanmadı.");
+371:   }
+372: 
+373:   const outcome =
+374:     score >= 75 && reasons.length === 0
+375:       ? "accepted_for_further_action"
+376:       : score >= 45 && submission.suspectId === canonicalSuspectId && inaccessibleIds.length === 0
+377:         ? "returned_for_more_evidence"
+378:         : "rejected";
+379: 
+380:   if (outcome === "accepted_for_further_action") {
+381:     reasons.push("Dosya ileri incelemeye alınır; bu sonuç suçluluğun kesinleşmesi değildir.");
+382:   } else if (outcome === "returned_for_more_evidence") {
+383:     reasons.push("Dosya makul bağlantılar içeriyor ancak ek araştırma gerektiriyor.");
+384:   }
+385: 
+386:   return {
+387:     id: crypto.randomUUID(),
+388:     outcome,
+389:     score,
+390:     reasons,
+391:     componentScores,
+392:     createdAt: now
+393:   };
+394: }
+395: 
+396: function conditionSatisfied(condition: UnlockCondition | null, session: SessionState): boolean {
+397:   if (condition === null) return true;
+398:   const unlocked = new Set(session.unlockedEvidenceIds);
+399:   const actions = new Set(session.actions);
+400:   if (condition.evidenceIds?.some((evidenceId) => !unlocked.has(evidenceId))) return false;
+401:   if (condition.action && !actions.has(condition.action)) return false;
+402:   if (condition.event && !actions.has(condition.event)) return false;
+403:   if (condition.characterId && !actions.has(`asked:${condition.characterId}:${condition.questionTopic ?? ""}`)) {
+404:     return false;
+405:   }
+406:   if (
+407:     condition.interviewCompleted &&
+408:     !session.completedInterviews.some(
+409:       (interview) =>
+410:         interview.characterId === condition.interviewCompleted &&
+411:         (condition.questionTopic === undefined || interview.topic === condition.questionTopic)
+412:     )
+413:   ) {
+414:     return false;
+415:   }
+416:   if (
+417:     condition.questionTopic &&
+418:     !session.actions.some((action) => action.endsWith(`:${condition.questionTopic}`))
+419:   ) {
+420:     return false;
+421:   }
+422:   return true;
+423: }
+424: 
+425: function addActionMarkers(session: SessionState, action: PlayerAction): SessionState {
+426:   const actions = new Set(session.actions);
+427:   let completedInterviews = session.completedInterviews;
+428:   let interrogations = session.interrogations;
+429:   let questionHistory = session.questionHistory;
+430:   switch (action.type) {
+431:     case "load_case":
+432:       actions.add("load_case");
+433:       break;
+434:     case "visit_location":
+435:       actions.add(`visited:${action.locationId}`);
+436:       break;
+437:     case "start_interview":
+438:       actions.add(`interview_started:${action.characterId}`);
+439:       if (!interrogations.some((interrogation) => interrogation.characterId === action.characterId)) {
+440:         interrogations = [...interrogations, { characterId: action.characterId, startedAt: new Date().toISOString(), questionTopics: [] }];
+441:       }
+442:       break;
+443:     case "complete_interview":
+444:       actions.add(`interview:${action.characterId}:${action.topic ?? ""}`);
+445:       completedInterviews = appendInterview(completedInterviews, action.characterId, action.topic);
+446:       break;
+447:     case "ask_character":
+448:       actions.add(`asked:${action.characterId}:${action.topic ?? ""}`);
+449:       if (action.topic) {
+450:         actions.add(`topic:${action.topic}`);
+451:         completedInterviews = appendInterview(completedInterviews, action.characterId, action.topic);
+452:         if (action.characterId === "C02" && suspectInterrogationTopics.has(action.topic)) {
+453:           interrogations = interrogations.map((interrogation) => interrogation.characterId === "C02"
+454:             ? { ...interrogation, questionTopics: [...new Set([...interrogation.questionTopics, action.topic as string])] }
+455:             : interrogation);
+456:         }
+457:       }
+458:       questionHistory = [...questionHistory, {
+459:         characterId: action.characterId,
+460:         question: normalize(action.question).replace(/[?!.,]/gu, "").trim(),
+461:         topic: action.topic ?? "",
+462:         askedAt: new Date().toISOString()
+463:       }];
+464:       break;
+465:     default:
+466:       actions.add(action.type);
+467:   }
+468:   return { ...session, actions: [...actions], completedInterviews, interrogations, questionHistory };
+469: }
+470: 
+471: function firstDeniedReason(caseData: CaseData, session: SessionState, action: PlayerAction): string | undefined {
+472:   if (action.type === "visit_location" && !getVisibleLocations(caseData, session).some((location) => location.id === action.locationId)) {
+473:     return "location_locked_or_unknown";
+474:   }
+475:   if (
+476:     (action.type === "ask_character" || action.type === "complete_interview" || action.type === "start_interview") &&
+477:     !getAccessibleCharacters(caseData, session).some((character) => character.id === action.characterId)
+478:   ) {
+479:     return "character_locked_or_unknown";
+480:   }
+481:   if (action.type === "ask_character" && action.characterId === "C02" && !session.interrogations.some((interrogation) => interrogation.characterId === "C02")) {
+482:     return "interrogation_not_started";
+483:   }
+484: 
+485:   const candidates = caseData.evidence.filter((evidence) => actionMatchesCondition(action, evidence.unlockCondition));
+486:   for (const evidence of candidates) {
+487:     const missing = (evidence.unlockCondition?.evidenceIds ?? []).filter(
+488:       (evidenceId) => !session.unlockedEvidenceIds.includes(evidenceId)
+489:     );
+490:     if (missing.length > 0) return `missing_prerequisite_${missing.join("_")}`;
+491:   }
+492:   if (action.type === "interview_suspect") {
+493:     const missing = ["E07", "E08"].filter((id) => !session.unlockedEvidenceIds.includes(id));
+494:     if (missing.length > 0) return `missing_prerequisite_${missing.join("_")}`;
+495:     const interrogation = session.interrogations.find((item) => item.characterId === "C02");
+496:     if (!interrogation) return "interrogation_not_started";
+497:     if (interrogation.questionTopics.filter((topic) => suspectInterrogationTopics.has(topic)).length < 2) return "interrogation_topics_incomplete";
+498:   }
+499:   return undefined;
+500: }
+501: 
+502: function actionMatchesCondition(action: PlayerAction, condition: UnlockCondition | null): boolean {
+503:   if (!condition) return false;
+504:   if ("action" in action && condition.action === action.type) return true;
+505:   if (condition.action && action.type === condition.action) return true;

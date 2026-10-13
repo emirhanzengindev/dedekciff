@@ -1,0 +1,261 @@
+  });
+  const interactionMutation = useMutation({
+    mutationFn: (payload: InteractionPayload) => sendInteraction(sessionId ?? "", payload),
+    onSuccess: (result, payload) => {
+      const previousLocationIds = new Set(session?.locations.map((location) => location.id) ?? []);
+      setSession(result.session);
+      if (payload.type === "visit_location" && payload.locationId) setSelectedLocationId(payload.locationId);
+      const newLocations = result.session.locations.filter((location) => !previousLocationIds.has(location.id));
+      const unlocked = result.newlyUnlockedEvidenceIds.map((id) => evidenceNames[id] ?? id);
+      const details = [
+        unlocked.length ? `Yeni delil: ${unlocked.join(", ")}.` : "",
+        newLocations.length ? `Haritada yeni konum: ${newLocations.map((location) => location.name).join(", ")}.` : ""
+      ].filter(Boolean);
+      setFeedback(details.join(" ") || (payload.type === "visit_location" ? "Konum açıldı. Çevredeki ayrıntıları incele." : "İşlem tamamlandı; bu adımda yeni delil çıkmadı."));
+      void queryClient.invalidateQueries({ queryKey: ["evidence", sessionId] });
+      void queryClient.invalidateQueries({ queryKey: ["strength", sessionId] });
+    },
+    onError: (error) => setFeedback(toTurkishError(error))
+  });
+  const questionMutation = useMutation({
+    mutationFn: (payload: { characterId: string; question: string; topic?: string }) =>
+      askQuestion(sessionId ?? "", payload),
+    onSuccess: (result: { answer: string; status: string; supportingEvidenceIds: string[]; newlyUnlockedEvidenceIds: string[]; session: SessionDto }, payload) => {
+      setSession(result.session);
+      setConversation((current) => [
+        ...current,
+        { characterId: payload.characterId, role: "player", text: payload.question },
+        { characterId: payload.characterId, role: "character", text: result.answer, evidenceIds: result.supportingEvidenceIds }
+      ]);
+      const opened = result.newlyUnlockedEvidenceIds.map((id) => evidenceNames[id] ?? id);
+      setFeedback(opened.length ? `Görüşme kaydedildi. Yeni delil: ${opened.join(", ")}.` : "Görüşme yanıtı kaydedildi.");
+      questionForm.reset();
+      void queryClient.invalidateQueries({ queryKey: ["evidence", sessionId] });
+      void queryClient.invalidateQueries({ queryKey: ["strength", sessionId] });
+    },
+    onError: (error) => setFeedback(toTurkishError(error))
+  });
+  const prosecutionMutation = useMutation({
+    mutationFn: () =>
+      submitProsecution(sessionId ?? "", {
+        suspectId: "C02",
+        crimeSummary: "Kurgusal gösteri ve ödeme iddiası, erişilmiş delillerle birlikte sunulur.",
+        evidenceIds: session?.unlockedEvidenceIds ?? [],
+        contradictionAnalysis: "Ödeme iddiasının bağımsız doğrulama sınırı açıkça belirtilir.",
+        gaps: "Gerçek banka transferi yoktur; dosya bunu kesin suçluluk gibi sunmaz."
+      }),
+    onSuccess: (result) => {
+      setProsecutionResult(result);
+      setFeedback("Savcılık dosyası değerlendirildi.");
+    },
+    onError: (error) => setFeedback(toTurkishError(error))
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => setClockMs(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!feedback) return;
+    const timeout = setTimeout(() => setFeedback(undefined), 4500);
+    return () => clearTimeout(timeout);
+  }, [feedback]);
+
+  useEffect(() => {
+    if (!supabase) {
+      setAuthReady(true);
+      return;
+    }
+    let mounted = true;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (mounted) {
+        setAuthSession(nextSession);
+        setAuthReady(true);
+      }
+    });
+    void supabase.auth.getSession().then(({ data }) => {
+      if (mounted) {
+        setAuthSession(data.session);
+        setAuthReady(true);
+      }
+    }).catch(() => {
+      if (mounted) setAuthReady(true);
+    });
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const savedSessionQuery = useQuery({
+    queryKey: ["session", sessionId],
+    queryFn: () => getSession(sessionId ?? ""),
+    enabled: Boolean(sessionId && hasHydrated && authReady && (!supabase || authSession))
+  });
+
+  useEffect(() => {
+    if (savedSessionQuery.data) setSession(savedSessionQuery.data);
+  }, [savedSessionQuery.data]);
+
+  const evidenceQuery = useQuery({
+    queryKey: ["evidence", sessionId, session?.unlockedEvidenceIds],
+    queryFn: () => getEvidence(sessionId ?? ""),
+    enabled: Boolean(sessionId)
+  });
+  const strengthQuery = useQuery({
+    queryKey: ["strength", sessionId, session?.unlockedEvidenceIds],
+    queryFn: () => getCaseStrength(sessionId ?? ""),
+    enabled: Boolean(sessionId)
+  });
+
+  const activeCharacter = useMemo(
+    () => session?.characters.find((character) => character.id === activeCharacterId) ?? session?.characters[0],
+    [activeCharacterId, session?.characters]
+  );
+  const suspectInterrogation = session?.interrogations.find((interrogation) => interrogation.characterId === "C02");
+  const hasWitnessCorroboration = session?.completedInterviews.some((interview) => interview.characterId === "C03" && interview.topic === "who_arranged_show") ?? false;
+  const suspectTopics = new Set((suspectInterrogation?.questionTopics ?? []).filter((topic) => topic in suspectTopicLabels));
+  const suspectAvailable = session?.characters.some((character) => character.id === "C02") ?? false;
+  const suspectTimeRemainingMs = suspectInterrogation
+    ? Math.max(0, 120_000 - (clockMs - Date.parse(suspectInterrogation.startedAt)))
+    : 120_000;
+  const suspectInterviewDone = session?.unlockedEvidenceIds.includes("E09") ?? false;
+  const suspectCanFinish = Boolean(
+    suspectInterrogation &&
+    suspectTopics.size >= 2 &&
+    (session?.unlockedEvidenceIds.includes("E07") ?? false) &&
+    (session?.unlockedEvidenceIds.includes("E08") ?? false) &&
+    !suspectInterviewDone
+  );
+  const selectedLocation = session?.locations.find((location) => location.id === selectedLocationId) ?? session?.locations[0];
+  const unlockedEvidence = new Set(session?.unlockedEvidenceIds ?? []);
+  const hasEvidence = (evidenceId: string) => unlockedEvidence.has(evidenceId);
+
+  if (!authReady || !hasHydrated) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.emptyState}><Text style={styles.muted}>Dosya oturumu açılıyor...</Text></View>
+      </SafeAreaView>
+    );
+  }
+  if (supabase && !authSession) return <AuthScreen client={supabase} />;
+
+  if (sessionId && !session) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.loadingState}>
+          {savedSessionQuery.isError ? (
+            <>
+              <Text style={styles.sectionTitle}>Kayıtlı dosya açılamadı</Text>
+              <Text style={styles.muted}>{toTurkishError(savedSessionQuery.error)}</Text>
+              <ActionButton icon="refresh" title="Yeniden dene" onPress={() => void savedSessionQuery.refetch()} />
+              <ActionButton icon="folder-plus" title="Yeni dosya başlat" onPress={() => { clearSessionId(); setSession(undefined); }} />
+            </>
+          ) : <Text style={styles.muted}>Kayıtlı dosya açılıyor...</Text>}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!session) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <ScrollView contentContainerStyle={styles.briefingScreen}>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.eyebrow}>DOSYA 001 / İLK İNCELEME</Text>
+              <Text style={styles.title}>Çil Çil Altınlar</Text>
+            </View>
+            {supabase && authSession ? <SignOutButton onPress={() => { void supabase?.auth.signOut(); clearSessionId(); }} /> : null}
+          </View>
+
+          <View style={styles.briefingLead}>
+            <MaterialCommunityIcons name="folder-search" color={colors.accent} size={25} />
+            <Text style={styles.briefingLabel}>BAŞLANGIÇ TUTANAĞI</Text>
+            <Text style={styles.briefingText}>
+              İlk dosya kaydı, altın vaadi içeren bir gösteriye katıldığını ve ödeme yaptıktan sonra vaat edilen altını alamadığını bildiren Leyla Karaca’nın şikâyetidir. Bu, henüz doğrulanmamış bir iddiadır.
+            </Text>
+          </View>
+
+          <Text style={styles.sectionTitle}>Dosyadaki ilk beyanlar</Text>
+          <StatementCard name="Leyla Karaca · şikâyetçi" text="Bir tanıdık aracılığıyla altın bulunduğu söylenen bir gösteriye çağrıldım. Gösteriden sonra para verdiğimi ve vaat edilen altının teslim edilmediğini bildiriyorum." />
+          <StatementCard name="Nermin Aksoy · ikinci şikâyet özeti" text="Benzer bir altın vaadiyle para verdiğimi bildiriyorum." note="Ayrıntılı görüşme, ilgili şikâyet kaydı araştırmada açıldığında yapılabilir." />
+
+          <View style={styles.disclaimer}>
+            <MaterialCommunityIcons name="information-outline" color={colors.muted} size={18} />
+            <Text style={styles.disclaimerText}>Oyun içindeki kişiler, olaylar ve deliller kurgusaldır. Şikâyet beyanı tek başına kanıt veya suçluluk sonucu değildir.</Text>
+          </View>
+
+          {feedback ? <FeedbackBanner text={feedback} onDismiss={() => setFeedback(undefined)} /> : null}
+          <Pressable testID="start-case" accessibilityRole="button" disabled={startMutation.isPending} style={[styles.startButton, startMutation.isPending && styles.disabled]} onPress={() => startMutation.mutate()}>
+            <MaterialCommunityIcons name="folder-open" color={colors.background} size={20} />
+            <Text style={styles.startButtonText}>{startMutation.isPending ? "Dosya hazırlanıyor..." : "Dosyayı al ve haritayı aç"}</Text>
+          </Pressable>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  const tabs: Array<{ id: WorkspaceTab; label: string; icon: keyof typeof MaterialCommunityIcons.glyphMap }> = [
+    { id: "map", label: "Harita", icon: "map-marker-radius" },
+    { id: "investigation", label: "Soruşturma", icon: "account-search" },
+    { id: "forensics", label: "Adli Tıp", icon: "flask-outline" },
+    { id: "prosecution", label: "Savcılık", icon: "scale-balance" }
+  ];
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.workspace}>
+        <View style={styles.workspaceHeader}>
+          <View style={styles.headerTitleBlock}>
+            <Text style={styles.eyebrow}>CASE-001 / SORUŞTURMA</Text>
+            <Text numberOfLines={1} style={styles.workspaceTitle}>Çil Çil Altınlar</Text>
+          </View>
+          <View style={styles.headerActions}>
+            <View style={styles.statPill}><Text style={styles.statPillText}>{session.evidenceCount} delil</Text></View>
+            <View style={styles.statPill}><Text style={styles.statPillText}>Güç {strengthQuery.data?.score ?? 0}</Text></View>
+            {supabase && authSession ? <SignOutButton onPress={() => { void supabase?.auth.signOut(); clearSessionId(); setSession(undefined); }} /> : null}
+          </View>
+        </View>
+
+        <View accessibilityRole="tablist" style={styles.tabs}>
+          {tabs.map((tab) => (
+            <Pressable
+              accessibilityRole="tab"
+              accessibilityState={{ selected: activeTab === tab.id }}
+              key={tab.id}
+              onPress={() => setActiveTab(tab.id)}
+              style={[styles.tab, activeTab === tab.id && styles.tabActive]}
+            >
+              <MaterialCommunityIcons name={tab.icon} size={17} color={activeTab === tab.id ? colors.accent : colors.muted} />
+              <Text numberOfLines={1} style={[styles.tabText, activeTab === tab.id && styles.tabTextActive]}>{tab.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {feedback ? <FeedbackBanner text={feedback} onDismiss={() => setFeedback(undefined)} /> : null}
+
+        {activeTab === "map" ? (
+          <View style={styles.mapWorkspace}>
+            <View style={styles.mapHeading}>
+              <View>
+                <Text style={styles.mapHeadingTitle}>Gümüştepe</Text>
+                <Text style={styles.muted}>Erişilebilir konumlar: {session.locations.length}</Text>
+              </View>
+              <MaterialCommunityIcons name="crosshairs-gps" color={colors.accent} size={21} />
+            </View>
+            <CaseMap
+              locations={session.locations}
+              selectedLocationId={selectedLocation?.id}
+              onLocationPress={(locationId) => interactionMutation.mutate({ type: "visit_location", locationId })}
+            />
+            {selectedLocation ? (
+              <View style={styles.locationPanel}>
+                <View style={styles.locationPanelCopy}>
+                  <Text style={styles.locationPanelTitle}>{selectedLocation.name}</Text>
+                  <Text numberOfLines={2} style={styles.locationPanelDescription}>{selectedLocation.description}</Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Soruşturmayı ${selectedLocation.name} konumunda aç`}

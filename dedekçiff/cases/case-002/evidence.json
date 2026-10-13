@@ -1,0 +1,461 @@
+{
+    "caseId":  "case-002",
+    "contentType":  "documentary_adaptation_gameplay_data",
+    "evidence":  [
+                     {
+                         "id":  "E01",
+                         "name":  "Olay yeri: mutfak",
+                         "type":  "crime_scene",
+                         "fictional":  false,
+                         "locationId":  "LOC-kitchen",
+                         "initiallyAvailable":  true,
+                         "unlockCondition":  null,
+                         "facts":  [
+                                       "Belgesel anlatımına göre Megan, mutfakta kan izleri bulunan bir alanda bulunmuş; boyun ve sırt bölgesinde bıçak yaraları olduğu aktarılıyor."
+                                   ],
+                         "factCodes":  [
+                                           "documentary_claim"
+                                       ],
+                         "reliability":  0.75,
+                         "independentVerification":  false,
+                         "unlocks":  {
+                                         "characters":  [
+
+                                                        ],
+                                         "locations":  [
+                                                           "LOC-home",
+                                                           "LOC-kitchen"
+                                                       ],
+                                         "evidence":  [
+                                                          "E04"
+                                                      ]
+                                     },
+                         "limitations":  [
+                                             "Bu kart, gerçek olay yeri fotoğrafı veya adli tıp raporu değildir; yalnızca belgesel anlatımının oyunlaştırılmış özetidir."
+                                         ],
+                         "sourceBoundary":  "documentary_transcript_claim:SN-01,SN-02",
+                         "unlockConditionServerEvaluated":  true,
+                         "clientMaySetUnlocked":  false,
+                         "proves":  [
+                                        "Belgeselin olay yeri anlatımının içeriği"
+                                    ],
+                         "doesNotProve":  [
+                                              "Olayın bağımsız adli bulguları",
+                                              "Failin kimliği",
+                                              "Cinayet silahının kesin kimliği"
+                                          ]
+                     },
+                     {
+                         "id":  "E02",
+                         "name":  "Olay yeri canlandırması: giriş ve arama anlatımı",
+                         "type":  "scene_reconstruction",
+                         "fictional":  false,
+                         "locationId":  "LOC-window",
+                         "initiallyAvailable":  false,
+                         "unlockCondition":  {
+                                                 "evidenceIds":  [
+                                                                     "E01"
+                                                                 ]
+                                             },
+                         "facts":  [
+                                       "Belgesel anlatımına göre pencerenin zorlandığı, birinci kat penceresinin kırık olduğu ve evin arandığı aktarılıyor."
+                                   ],
+                         "factCodes":  [
+                                           "documentary_claim"
+                                       ],
+                         "reliability":  0.6,
+                         "independentVerification":  false,
+                         "unlocks":  {
+                                         "characters":  [
+
+                                                        ],
+                                         "locations":  [
+                                                           "LOC-window"
+                                                       ],
+                                         "evidence":  [
+
+                                                      ]
+                                     },
+                         "limitations":  [
+                                             "Canlandırma, gerçek olay yeri incelemesi değildir; giriş güzergâhı belgesel anlatımına dayanır."
+                                         ],
+                         "sourceBoundary":  "documentary_transcript_claim:SN-02",
+                         "unlockConditionServerEvaluated":  true,
+                         "clientMaySetUnlocked":  false,
+                         "proves":  [
+                                        "Belgeselin giriş güzergâhı anlatımının içeriği"
+                                    ],
+                         "doesNotProve":  [
+                                              "Girişin bağımsız kriminalistik kanıtı",
+                                              "Failin kimliği"
+                                          ]
+                     },
+                     {
+                         "id":  "E03",
+                         "name":  "Üst kat: mücadele ve bant anlatımı",
+                         "type":  "scene_observation",
+                         "fictional":  false,
+                         "locationId":  "LOC-upstairs",
+                         "initiallyAvailable":  false,
+                         "unlockCondition":  {
+                                                 "evidenceIds":  [
+                                                                     "E01"
+                                                                 ]
+                                             },
+                         "facts":  [
+                                       "Belgesel anlatımına göre üst katta mücadele izleri ve koli bantları bulunduğu aktarılıyor."
+                                   ],
+                         "factCodes":  [
+                                           "documentary_claim"
+                                       ],
+                         "reliability":  0.6,
+                         "independentVerification":  false,
+                         "unlocks":  {
+                                         "characters":  [
+
+                                                        ],
+                                         "locations":  [
+                                                           "LOC-upstairs"
+                                                       ],
+                                         "evidence":  [
+
+                                                      ]
+                                     },
+                         "limitations":  [
+                                             "Üst kat anlatımı gerçek adli bulgu kaydı değildir; mücadele tespiti belgesel anlatımıdır."
+                                         ],
+                         "sourceBoundary":  "documentary_transcript_claim:SN-02",
+                         "unlockConditionServerEvaluated":  true,
+                         "clientMaySetUnlocked":  false,
+                         "proves":  [
+                                        "Belgeselin üst kat anlatımının içeriği"
+                                    ],
+                         "doesNotProve":  [
+                                              "Mücadelenin bağımsız kriminalistik kanıtı",
+                                              "Saldırganın kimliği"
+                                          ]
+                     },
+                     {
+                         "id":  "E04",
+                         "name":  "Mutfaktaki bıçak anlatımı",
+                         "type":  "weapon_account",
+                         "fictional":  false,
+                         "locationId":  "LOC-kitchen",
+                         "initiallyAvailable":  false,
+                         "unlockCondition":  {
+                                                 "evidenceIds":  [
+                                                                     "E01"
+                                                                 ]
+                                             },
+                         "facts":  [
+                                       "Belgesel anlatımına göre mutfak tezgahı ve lavabo çevresinde bulunan bir bıçaktan söz ediliyor."
+                                   ],
+                         "factCodes":  [
+                                           "documentary_claim"
+                                       ],
+                         "reliability":  0.55,
+                         "independentVerification":  false,
+                         "unlocks":  {
+                                         "characters":  [
+
+                                                        ],
+                                         "locations":  [
+
+                                                       ],
+                                         "evidence":  [
+
+                                                      ]
+                                     },
+                         "limitations":  [
+                                             "Bıçak anlatımı, adli balistik/kesici alet raporu değildir; kesin cinayet silahı tespiti içermez."
+                                         ],
+                         "sourceBoundary":  "documentary_transcript_claim:SN-02",
+                         "unlockConditionServerEvaluated":  true,
+                         "clientMaySetUnlocked":  false,
+                         "proves":  [
+                                        "Belgeselin bıçak anlatımının içeriği"
+                                    ],
+                         "doesNotProve":  [
+                                              "Bıçağın cinayet silahı olduğu",
+                                              "Bağımsız adli tespit"
+                                          ]
+                     },
+                     {
+                         "id":  "E05",
+                         "name":  "Olay yerinden alınan DNA örneği anlatımı",
+                         "type":  "biological_sample_account",
+                         "fictional":  false,
+                         "locationId":  "LOC-kitchen",
+                         "initiallyAvailable":  false,
+                         "unlockCondition":  {
+                                                 "evidenceIds":  [
+                                                                     "E01"
+                                                                 ]
+                                             },
+                         "facts":  [
+                                       "Belgesel anlatımına göre olay yerinde cinsel saldırı izleri ve karşılaştırılabilir DNA örneği bulunduğu aktarılıyor."
+                                   ],
+                         "factCodes":  [
+                                           "documentary_claim"
+                                       ],
+                         "reliability":  0.7,
+                         "independentVerification":  false,
+                         "unlocks":  {
+                                         "characters":  [
+
+                                                        ],
+                                         "locations":  [
+
+                                                       ],
+                                         "evidence":  [
+                                                          "E06",
+                                                          "E07",
+                                                          "E08"
+                                                      ]
+                                     },
+                         "limitations":  [
+                                             "Bu kart bir laboratuvar raporu değildir; örnek toplama ve analiz ayrıntıları transkriptte yer almıyor."
+                                         ],
+                         "sourceBoundary":  "documentary_transcript_claim:SN-02,SN-03",
+                         "unlockConditionServerEvaluated":  true,
+                         "clientMaySetUnlocked":  false,
+                         "proves":  [
+                                        "Belgeselin DNA örneği anlatımının varlığı"
+                                    ],
+                         "doesNotProve":  [
+                                              "Laboratuvar sonucu",
+                                              "Eşleşme istatistiği",
+                                              "Örnek zincirinin bağımsız kaydı"
+                                          ]
+                     },
+                     {
+                         "id":  "E06",
+                         "name":  "İlk şüpheli: Keith Camp DNA karşılaştırma anlatımı",
+                         "type":  "dna_comparison_account",
+                         "fictional":  false,
+                         "locationId":  "LOC-investigation",
+                         "initiallyAvailable":  false,
+                         "unlockCondition":  {
+                                                 "evidenceIds":  [
+                                                                     "E05"
+                                                                 ]
+                                             },
+                         "facts":  [
+                                       "Belgesel anlatımına göre Keith Camp\u0027ten alınan örnek, olay yerindeki DNA ile eşleşmemiş ve Camp elenmiştir."
+                                   ],
+                         "factCodes":  [
+                                           "documentary_claim"
+                                       ],
+                         "reliability":  0.65,
+                         "independentVerification":  false,
+                         "unlocks":  {
+                                         "characters":  [
+
+                                                        ],
+                                         "locations":  [
+
+                                                       ],
+                                         "evidence":  [
+
+                                                      ]
+                                     },
+                         "limitations":  [
+                                             "Bu kart bir laboratuvar raporu değildir; eşleşmeme bilgisi belgesel anlatımıdır."
+                                         ],
+                         "sourceBoundary":  "documentary_transcript_claim:SN-03",
+                         "unlockConditionServerEvaluated":  true,
+                         "clientMaySetUnlocked":  false,
+                         "proves":  [
+                                        "Belgeselin Camp elenme anlatımının içeriği"
+                                    ],
+                         "doesNotProve":  [
+                                              "Bağımsız laboratuvar kaydı",
+                                              "Kesin eşleşmeme istatistiği"
+                                          ]
+                     },
+                     {
+                         "id":  "E07",
+                         "name":  "Chris Short DNA karşılaştırma anlatımı",
+                         "type":  "dna_comparison_account",
+                         "fictional":  false,
+                         "locationId":  "LOC-investigation",
+                         "initiallyAvailable":  false,
+                         "unlockCondition":  {
+                                                 "evidenceIds":  [
+                                                                     "E05"
+                                                                 ]
+                                             },
+                         "facts":  [
+                                       "Belgesel anlatımına göre annenin ilişki iddiasını reddettiği Chris Short, DNA karşılaştırmasıyla elenmiştir."
+                                   ],
+                         "factCodes":  [
+                                           "documentary_claim"
+                                       ],
+                         "reliability":  0.65,
+                         "independentVerification":  false,
+                         "unlocks":  {
+                                         "characters":  [
+
+                                                        ],
+                                         "locations":  [
+
+                                                       ],
+                                         "evidence":  [
+
+                                                      ]
+                                     },
+                         "limitations":  [
+                                             "Bu kart bir laboratuvar raporu değildir; eşleşmeme bilgisi belgesel anlatımıdır."
+                                         ],
+                         "sourceBoundary":  "documentary_transcript_claim:SN-03",
+                         "unlockConditionServerEvaluated":  true,
+                         "clientMaySetUnlocked":  false,
+                         "proves":  [
+                                        "Belgeselin Short elenme anlatımının içeriği"
+                                    ],
+                         "doesNotProve":  [
+                                              "Bağımsız laboratuvar kaydı",
+                                              "Kesin eşleşmeme istatistiği"
+                                          ]
+                     },
+                     {
+                         "id":  "E08",
+                         "name":  "Sakız örneği olayı anlatımı",
+                         "type":  "sample_incident_account",
+                         "fictional":  false,
+                         "locationId":  "LOC-investigation",
+                         "initiallyAvailable":  false,
+                         "unlockCondition":  {
+                                                 "evidenceIds":  [
+                                                                     "E05"
+                                                                 ]
+                                             },
+                         "facts":  [
+                                       "Belgesel anlatımına göre Robert\u0027tan sakız örneği istenmiş, örneğin başkasına ait olduğu anlaşılmıştır."
+                                   ],
+                         "factCodes":  [
+                                           "documentary_claim"
+                                       ],
+                         "reliability":  0.6,
+                         "independentVerification":  false,
+                         "unlocks":  {
+                                         "characters":  [
+
+                                                        ],
+                                         "locations":  [
+
+                                                       ],
+                                         "evidence":  [
+
+                                                      ]
+                                     },
+                         "limitations":  [
+                                             "Sakız örneği olayı gerçek bir laboratuvar tutanağı değildir; yalnızca belgesel anlatımıdır."
+                                         ],
+                         "sourceBoundary":  "documentary_transcript_claim:SN-04",
+                         "unlockConditionServerEvaluated":  true,
+                         "clientMaySetUnlocked":  false,
+                         "proves":  [
+                                        "Örneğe müdahale anlatımının varlığı"
+                                    ],
+                         "doesNotProve":  [
+                                              "Örneğe müdahalenin bağımsız kanıtı",
+                                              "Laboratuvar kayıtları"
+                                          ]
+                     },
+                     {
+                         "id":  "E09",
+                         "name":  "Okul çevresi ve eski tanışıklık anlatımı",
+                         "type":  "school_circle_account",
+                         "fictional":  false,
+                         "locationId":  "LOC-school",
+                         "initiallyAvailable":  false,
+                         "unlockCondition":  {
+                                                 "evidenceIds":  [
+                                                                     "E06",
+                                                                     "E07"
+                                                                 ]
+                                             },
+                         "facts":  [
+                                       "Belgesel anlatımına göre ilk şüpheliler elendikten sonra soruşturma okul çevresine yönelmiş; Heather, Robert ile eski tanışıklık anlatmıştır."
+                                   ],
+                         "factCodes":  [
+                                           "documentary_claim"
+                                       ],
+                         "reliability":  0.55,
+                         "independentVerification":  false,
+                         "unlocks":  {
+                                         "characters":  [
+                                                            "char-convicted"
+                                                        ],
+                                         "locations":  [
+                                                           "LOC-school"
+                                                       ],
+                                         "evidence":  [
+
+                                                      ]
+                                     },
+                         "limitations":  [
+                                             "Okul çevresi anlatımı görgü tanığı ifadesi tutanağı değildir; belgesel anlatımıdır."
+                                         ],
+                         "sourceBoundary":  "documentary_transcript_claim:SN-03",
+                         "unlockConditionServerEvaluated":  true,
+                         "clientMaySetUnlocked":  false,
+                         "proves":  [
+                                        "Soruşturmanın okul çevresine yönelme anlatımı"
+                                    ],
+                         "doesNotProve":  [
+                                              "Eski tanışıklığın bağımsız kanıtı",
+                                              "Failin kimliği"
+                                          ]
+                     },
+                     {
+                         "id":  "E10",
+                         "name":  "Şüphelinin anlatımı ve çelişkiler",
+                         "type":  "interview_account",
+                         "fictional":  false,
+                         "locationId":  "LOC-investigation",
+                         "initiallyAvailable":  false,
+                         "unlockCondition":  {
+                                                 "evidenceIds":  [
+                                                                     "E08",
+                                                                     "E09"
+                                                                 ]
+                                             },
+                         "facts":  [
+                                       "Belgesel anlatımına göre Robert önce kendisini evde uyuduğunu söylemiş, sonra maskeli bir saldırgan anlatımı aktarmıştır; bu anlatım üst kattaki mücadele ve bant bulgularıyla çelişir.",
+                                       "Belgesel, Robert\u0027ın 2009 Eylül ayında birinci derece cinayet ve tecavüz suçlarından mahkûm edildiğini ve 42 yıl hapis cezası aldığını anlatıyor."
+                                   ],
+                         "factCodes":  [
+                                           "documentary_claim"
+                                       ],
+                         "reliability":  0.6,
+                         "independentVerification":  false,
+                         "unlocks":  {
+                                         "characters":  [
+
+                                                        ],
+                                         "locations":  [
+
+                                                       ],
+                                         "evidence":  [
+
+                                                      ]
+                                     },
+                         "limitations":  [
+                                             "Bu kart bir ifade tutanağı veya mahkeme kararı değildir; maskeli saldırgan anlatımı ve mahkûmiyet bilgisi belgesel anlatımıdır."
+                                         ],
+                         "sourceBoundary":  "documentary_transcript_claim:SN-04,SN-05",
+                         "unlockConditionServerEvaluated":  true,
+                         "clientMaySetUnlocked":  false,
+                         "proves":  [
+                                        "Anlatım ile bulgular arasındaki çelişkinin varlığı"
+                                    ],
+                         "doesNotProve":  [
+                                              "Anlatımın doğruluğu",
+                                              "Bağımsız mahkeme kaydı",
+                                              "Kesin motivasyon"
+                                          ]
+                     }
+                 ]
+}

@@ -1,0 +1,25 @@
+{
+  "caseId": "case-001",
+  "title": "Çil Çil Altınlar — Case-001 prototip paketi",
+  "files": [
+    "README.json",
+    "source_notes.json",
+    "characters.json",
+    "evidence.json",
+    "timeline.json",
+    "question_rules.json",
+    "prosecution.json",
+    "map.json",
+    "tests/evidence-unlocks.json",
+    "tests/character-knowledge.json",
+    "tests/timeline-consistency.json"
+  ],
+  "important": "Gerçek olayla ilgili içerik yalnızca kaynaklarda yayımlanan iddiaların özeti olarak tutulur. Oynanabilir dava, kişiler, deliller, tarih ve tutarlar kurgusaldır. Bu paket gerçek adli dosya veya kesin hüküm iddiası taşımaz.",
+  "knownLimitations": [
+    "Kaynak notları haber yayınlarını özetler; bağımsız adli dosya veya kesinleşmiş mahkeme kararı doğrulaması değildir.",
+    "Oyun içi tüm karakterler ve deliller kurgusaldır; gerçek kişilere atfedilemez.",
+    "Bu JSON test senaryoları uygulama kodu çalıştırılmadan yalnızca test tanımıdır; üretim ortamında backend test runner ile yürütülmelidir.",
+    "Üretim öncesi JSON Schema doğrulaması, erişim kontrolü, oyuncu bazlı unlock state ve sunucu tarafı savcılık değerlendirmesi uygulanmalıdır."
+  ],
+  "status": "prototype_not_production_ready"
+}

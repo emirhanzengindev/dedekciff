@@ -1,0 +1,104 @@
+{
+  "suspectCharacterId": "C02",
+  "prosecutorCharacterId": "C05",
+  "interrogation": {
+    "minimumDurationMs": 120000,
+    "requiredTopics": ["show_details", "payment_details", "who_invited"],
+    "minimumCompletedTopics": 2,
+    "completionEvidenceIds": ["E07", "E08"],
+    "repeatedQuestionCount": 2,
+    "corroboratingInterview": { "characterId": "C03", "topic": "who_arranged_show" }
+  },
+  "characterEvidenceScope": {
+    "C01": ["E01", "E02", "E05"],
+    "C02": ["E04", "E09"],
+    "C03": ["E02", "E04"],
+    "C04": ["E06", "E08"],
+    "C05": "*"
+  },
+  "caseStrength": {
+    "weakAreas": [
+      {
+        "id": "independent_verification",
+        "requiresIndependentVerification": true,
+        "text": "Bağımsız doğrulama zayıf."
+      },
+      {
+        "id": "cross_check_payment_claim",
+        "missingEvidenceIds": ["E10"],
+        "text": "Ödeme iddiasının sınırları henüz çapraz kontrol edilmedi."
+      }
+    ]
+  },
+  "prosecution": {
+    "readinessEvidenceIds": [],
+    "components": [
+      {
+        "id": "S1",
+        "evaluation": { "kind": "suspect_and_any_evidence", "evidenceIds": ["E04", "E09"], "points": 20 }
+      },
+      {
+        "id": "S2",
+        "evaluation": {
+          "kind": "evidence_tiers",
+          "tiers": [
+            { "match": "any", "evidenceIds": ["E03"], "points": 20 },
+            { "match": "any", "evidenceIds": ["E02"], "points": 12 }
+          ]
+        }
+      },
+      {
+        "id": "S3",
+        "evaluation": {
+          "kind": "evidence_with_analysis",
+          "match": "any",
+          "evidenceIds": ["E05"],
+          "pointsWithAnalysis": 16,
+          "points": 8
+        }
+      },
+      {
+        "id": "S4",
+        "evaluation": {
+          "kind": "independent_or_fallback",
+          "points": 20,
+          "fallback": { "minEvidenceCount": 3, "requiresAnalysis": true, "points": 10 }
+        }
+      },
+      {
+        "id": "S5",
+        "evaluation": { "kind": "analysis_present", "points": 18 }
+      }
+    ]
+  },
+  "topicAliases": [
+    { "characterId": "C03", "intent": "who_invited", "topic": "who_arranged_show" },
+    { "characterId": "C03", "intent": "suspect_presence", "topic": "who_arranged_show" },
+    { "characterId": "C02", "intent": "suspect_presence", "topic": "who_invited" },
+    { "characterId": "C01", "intent": "scene_objects", "topic": "show_details" },
+    { "intentPrefix": "payment_", "topic": "payment_details" }
+  ],
+  "intentPatterns": [
+    { "intent": "payment_recipient", "pattern": "(kime.{0,14}(ver|teslim|bırak)|kimin eline|alıcı|teslim alan|kim.{0,12}(aldı|teslim aldı))" },
+    { "intent": "payment_reason", "pattern": "(neden|niçin|ne için).{0,18}(para|öde)|(?:para|öde).{0,18}(neden|niçin)" },
+    { "intent": "payment_amount", "pattern": "(ne kadar|hangi tutar|tutarı ne|kaç\\s*(tl|lira))" },
+    { "intent": "payment_time", "pattern": "(ne zaman|hangi tarih|hangi gün|saat kaç|tarihi ne)" },
+    { "intent": "payment_method", "pattern": "(nasıl (öde|teslim)|elden mi|nakit mi|hangi yöntem)" },
+    { "intent": "payment_details", "pattern": "(öde(me|dim|di)|para|tutar|kaç\\s*(tl|lira)|banka|transfer)" },
+    { "intent": "suspect_presence", "pattern": "(murat.{0,24}(gör|mekân|mekan|orada)|kim.{0,20}murat.{0,20}gör)" },
+    { "intent": "who_invited", "pattern": "(kim.{0,24}(çağır|davet|yönlendir|getir)|davet eden|çağıran|tanıdık kim|düzenle(yen|di)?|organize)" },
+    { "intent": "promise", "pattern": "(vaat|söz ver|altın sözü|altın bul)" },
+    { "intent": "scene_objects", "pattern": "(kap|örtü|bidon|nesne|eşya|odada ne|mekânda ne)" },
+    { "intent": "other_victims", "pattern": "(başka (bir )?(mağdur|kişi)|nermin|diğer mağdur)" },
+    { "intent": "suspect_response", "pattern": "(şüpheli ne dedi|murat.{0,18}(kabul|ifade|savun)|ifadesi ne)" },
+    { "intent": "show_details", "pattern": "(gösteri|sahne|olay günü|ne oldu|anlat.{0,12}(olay|gösteri))" }
+  ],
+  "recordQuestionsWithoutTopic": false,
+  "narrativeStyle": "case_001_dialogue",
+  "fallbackTexts": {
+    "unknown": "Bu soruyu anlayamadım. Olay günü, seni kimin çağırdığı, gösteride gördüklerin veya ödeme beyanın hakkında sorabilirsin.",
+    "locked": "Bu bilgiye henüz erişimin yok. Önce ilgili delili açmalısın.",
+    "requiresInvestigation": "Mevcut deliller bu soruyu yanıtlamaya yetmiyor. Bir sonraki araştırma adımını seç."
+  },
+  "contentWarnings": []
+}
