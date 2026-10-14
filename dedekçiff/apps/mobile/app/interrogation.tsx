@@ -13,6 +13,126 @@ import { getCaseProfile, type IconName } from "../src/services/caseProfiles";
 import { useSessionStore } from "../src/stores/sessionStore";
 import { useConversationStore, type ConversationLine } from "../src/stores/conversationStore";
 import { colors } from "../src/theme/colors";
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  emptyState: {
+    alignItems: "center",
+    padding: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: colors.text,
+  },
+  muted: {
+    color: colors.muted,
+    fontSize: 14,
+  },
+  primaryButton: {
+    backgroundColor: colors.accent,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  primaryText: {
+    color: colors.text,
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+  },
+  backButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  headerCopy: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  eyebrow: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
+  headerTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  statPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: colors.panelAlt,
+  },
+  statPillText: {
+    color: colors.muted,
+    fontSize: 13,
+  },
+  feedbackBanner: {
+    backgroundColor: colors.ok,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  feedbackText: {
+    color: colors.background,
+    fontSize: 14,
+  },
+  scroll: {
+    flex: 1,
+  },
+  characterChoices: {
+    gap: 12,
+  },
+  characterChoice: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: 12,
+    backgroundColor: colors.background,
+  },
+  characterChoiceActive: {
+    borderColor: colors.accent,
+    backgroundColor: colors.panel,
+  },
+  characterChoiceText: {
+    color: colors.text,
+    fontWeight: "600",
+  },
+  characterChoiceTextActive: {
+    color: colors.accent,
+  },
+  characterRoleTag: {
+    marginLeft: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: colors.line,
+    color: colors.muted,
+    fontSize: 12,
+  },
+  characterRoleTagActive: {
+    backgroundColor: colors.accent,
+    color: colors.background,
+  },
+});
+
 
 const questionSchema = z.object({ question: z.string().min(2) });
 type QuestionForm = z.infer<typeof questionSchema>;
@@ -77,8 +197,6 @@ export default function InterrogationScreen() {
   const session = sessionQuery.data;
   const profile = getCaseProfile(session?.caseId ?? DEFAULT_CASE_ID);
 
-  const busy = interactionMutation.isPending || questionMutation.isPending;
-
   useEffect(() => {
     if (sessionId) beginSession(sessionId);
   }, [sessionId, beginSession]);
@@ -128,6 +246,9 @@ export default function InterrogationScreen() {
     },
     onError: (error) => setFeedback(toTurkishError(error))
   });
+  const busy = interactionMutation.isPending || questionMutation.isPending;
+
+
 
   const activeCharacter = useMemo(
     () => session?.characters.find((character) => character.id === activeCharacterId) ?? session?.characters[0],
@@ -157,7 +278,6 @@ export default function InterrogationScreen() {
     profile.suspect.finishEvidenceIds.every((id) => hasEvidence(id)) &&
     !suspectInterviewDone
   );
-  const busy = interactionMutation.isPending || questionMutation.isPending;
 
   if (!hasHydrated) {
     return (
@@ -226,3 +346,11 @@ export default function InterrogationScreen() {
             ))}
           </View>
 
+
+        </ScrollView>
+
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+
+}

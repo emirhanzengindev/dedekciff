@@ -19,11 +19,13 @@ import {
   listCases,
   sendInteraction,
   submitProsecution,
+  isRetryableError,
   DEFAULT_CASE_ID,
+  RequestErrorType,
   type CaseSummaryDto,
   type SessionDto
 } from "../src/services/api";
-import { getCaseProfile, type ActionContext, type ActionSpec, type CaseProfile, type IconName } from "../src/services/caseProfiles";
+import { getCaseProfile, listCaseProfiles, type ActionContext, type ActionSpec, type CaseProfile, type IconName } from "../src/services/caseProfiles";
 import { useSessionStore } from "../src/stores/sessionStore";
 import { supabase } from "../src/services/supabase";
 import { colors } from "../src/theme/colors";
@@ -60,7 +62,7 @@ export default function InvestigationScreen() {
   const [session, setSession] = useState<SessionDto | undefined>();
   const [authSession, setAuthSession] = useState<SupabaseSession | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [selectedCaseId, setSelectedCaseId] = useState<string | undefined>();
+  const [selectedCaseId, setSelectedCaseId] = useState<string | undefined>(DEFAULT_CASE_ID);
   const [activeCharacterId, setActiveCharacterId] = useState<string>("");
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("map");
   const [selectedLocationId, setSelectedLocationId] = useState<string>("");
@@ -79,6 +81,20 @@ export default function InvestigationScreen() {
     queryFn: listCases,
     enabled: !session
   });
+
+  // The server is the source of truth for available case packs. If the list has
+  // not arrived yet or the request failed, fall back to the locally registered
+  // profiles so the selection screen never appears empty and case-002 is always
+  // offered. The server list takes priority once it resolves.
+  const caseOptions: CaseSummaryDto[] = useMemo(() => {
+    const serverCases = availableCasesQuery.data;
+    if (serverCases && serverCases.length > 0) return serverCases;
+    return listCaseProfiles().map((profile) => ({
+      caseId: profile.caseId,
+      title: profile.title,
+      contentWarnings: []
+    }));
+  }, [availableCasesQuery.data]);
 
   const profile: CaseProfile = getCaseProfile(session?.caseId ?? selectedCaseId ?? DEFAULT_CASE_ID);
 
@@ -338,8 +354,16 @@ export default function InvestigationScreen() {
           </Animated.View>
 
           <SectionHeading title="Vaka seçimi" detail="Sunucuda yüklü vaka paketlerinden birini seç." />
+          {availableCasesQuery.isError ? (
+            <View style={styles.briefingLead}>
+              <Text style={styles.muted}>{toTurkishError(availableCasesQuery.error)} Paketler bu cihazdaki kayıtlardan gösteriliyor.</Text>
+              <ActionButton icon="refresh" title="Vakaları yeniden yükle" onPress={() => void availableCasesQuery.refetch()} />
+            </View>
+          ) : availableCasesQuery.isLoading ? (
+            <Text style={styles.muted}>Vaka paketleri yükleniyor...</Text>
+          ) : null}
           <View style={styles.actionList}>
-            {(availableCasesQuery.data ?? []).map((entry: CaseSummaryDto) => {
+            {caseOptions.map((entry: CaseSummaryDto) => {
               const isActive = (selectedCaseId ?? DEFAULT_CASE_ID) === entry.caseId;
               return (
                 <Pressable
@@ -808,8 +832,27 @@ function EmptyState({ icon, title, detail }: { icon: keyof typeof MaterialCommun
 }
 
 function toTurkishError(error: unknown) {
+  const requestType = (error as { type?: RequestErrorType } | null)?.type;
+  switch (requestType) {
+    case RequestErrorType.Network:
+      return "Sunucuya bağlanılamadı. Telefonun sunucuyla aynı ağda olduğundan ve sunucunun çalıştığından emin ol.";
+    case RequestErrorType.ServerTimeout:
+      return "Sunucu zamanında yanıt vermedi. Bağlantıyı kontrol edip yeniden dene.";
+    case RequestErrorType.Unauthorized:
+      return "Oturum doğrulanamadı. Bağlantıyı ve hesabı kontrol et.";
+    case RequestErrorType.NotFound:
+      return "Kayıtlı dosya bulunamadı. Yeni bir dosya başlatabilirsin.";
+    case RequestErrorType.ServerError:
+      return "Sunucu bir hatayla karşılaştı. Biraz sonra yeniden dene.";
+    default:
+      break;
+  }
+
   const code = error instanceof Error ? error.message : "";
   const known: Record<string, string> = {
+    auth_not_configured: "Sunucuda kimlik doğrulama yapılandırılmamış. Lütfen daha sonra tekrar dene.",
+    session_not_found: "Kayıtlı dosya bulunamadı. Yeni bir dosya başlatabilirsin.",
+    case_not_found: "Vaka paketi bulunamadı. Lütfen daha sonra tekrar dene.",
     location_locked_or_unknown: "Bu konum henüz haritada açılmadı.",
     character_locked_or_unknown: "Bu kişiyle görüşmek için önce ilgili delili bul.",
     missing_prerequisite_E02: "Önce gösteri alanına erişip sahne notunu bulmalısın.",

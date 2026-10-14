@@ -295,4 +295,41 @@ describe("api", () => {
     const after = await app.inject({ method: "GET", url: `/api/sessions/${session.id}` });
     expect((after.json() as { unlockedEvidenceIds: string[] }).unlockedEvidenceIds).toEqual(["E01"]);
   });
+
+  it("lists every supported case pack so the selection screen shows case-001 and case-002", async () => {
+    const app = await buildApp();
+    const response = await app.inject({ method: "GET", url: "/api/cases" });
+    expect(response.statusCode).toBe(200);
+    const cases = response.json() as Array<{ caseId: string; title: string }>;
+    const caseIds = cases.map((entry) => entry.caseId);
+    expect(caseIds).toContain("case-001");
+    expect(caseIds).toContain("case-002");
+    for (const entry of cases) {
+      expect(entry.title.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("starts a case-002 session when case-002 is selected, not a case-001 session", async () => {
+    const app = await buildApp(undefined, async () => "u1");
+    const created = await app.inject({
+      method: "POST",
+      url: "/api/sessions",
+      payload: { caseId: "case-002" }
+    });
+    expect(created.statusCode).toBe(201);
+    const session = created.json() as { id: string; caseId: string; caseTitle: string };
+    expect(session.caseId).toBe("case-002");
+    expect(session.caseTitle.length).toBeGreaterThan(0);
+  });
+
+  it("rejects an unsupported caseId instead of silently starting the default case", async () => {
+    const app = await buildApp(undefined, async () => "u1");
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/sessions",
+      payload: { caseId: "case-999" }
+    });
+    expect(response.statusCode).toBe(404);
+    expect(response.json()).toMatchObject({ error: "case_not_found" });
+  });
 });

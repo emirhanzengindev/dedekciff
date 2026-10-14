@@ -133,10 +133,20 @@ export async function buildApp(
   });
 
   app.get("/api/sessions/:sessionId", async (request, reply) => {
-    const session = await sessionStore.getSession(paramsSchema.parse(request.params).sessionId, request.userId ?? "");
-    if (!session) return reply.code(404).send({ error: "session_not_found" });
+    const params = paramsSchema.parse(request.params);
+    const sessionId = params.sessionId;
+    const userId = request.userId ?? "";
+
+    const session = await sessionStore.getSession(sessionId, userId);
+    if (!session) {
+      return reply.code(404).send({ error: "session_not_found", details: { sessionId } });
+    }
+
     const caseData = caseForSession(session);
-    if (!caseData) return reply.code(404).send({ error: "case_not_found" });
+    if (!caseData) {
+      return reply.code(404).send({ error: "case_not_found", details: { sessionId } });
+    }
+
     return serializeSession(caseData, session);
   });
 
