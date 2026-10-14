@@ -83,6 +83,7 @@ export const timelineEntrySchema = z.object({
 export const playerActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("load_case") }),
   z.object({ type: z.literal("visit_location"), locationId: z.string() }),
+  z.object({ type: z.literal("examine_location"), locationId: z.string() }),
   z.object({ type: z.literal("start_interview"), characterId: z.string() }),
   z.object({
     type: z.literal("complete_interview"),

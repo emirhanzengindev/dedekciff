@@ -36,6 +36,8 @@ export interface ActionSpec {
   title: string;
   detail: string | ((context: ActionContext) => string);
   disabled?: (context: ActionContext) => boolean;
+  /** Marks the investigation step complete once the given evidence exists (quest panel). */
+  isDone?: (context: ActionContext) => boolean;
   buildAction: () => { type: string; locationId?: string; characterId?: string };
 }
 
@@ -52,8 +54,17 @@ export interface CaseProfile {
   mapStamp: string;
   briefingLabel: string;
   briefingText: string;
+  /** Cinematic briefing cover extras (classification stamp, persona, first step). */
+  briefing?: {
+    classification: string;
+    fileLabel: string;
+    assignedDetective: string;
+    firstStepHint: string;
+  };
   statements: Array<{ name: string; text: string; note?: string }>;
   disclaimer: string;
+  /** Optional source-of-truth note shown under a character's opening statement. */
+  interviewSourceNote?: string;
   startFeedback: string;
   evidenceNames: Record<string, string>;
   suspectTopicLabels: Record<string, string>;
@@ -140,6 +151,12 @@ const case001: CaseProfile = {
   workspaceEyebrow: "CASE-001 / SORUŞTURMA",
   mapHeading: "Gümüştepe",
   mapStamp: "DOSYA 001",
+  briefing: {
+    classification: "GİZLİ",
+    fileLabel: "İNCELEME DOSYASI",
+    assignedDetective: "Dedektif McDaniel",
+    firstStepHint: "Benzer şikâyetleri araştır; ikinci mağdur kaydı dosyanın çerçevesini genişletir."
+  },
   briefingLabel: "BAŞLANGIÇ TUTANAĞI",
   briefingText:
     "İlk dosya kaydı, altın vaadi içeren bir gösteriye katıldığını ve ödeme yaptıktan sonra vaat edilen altını alamadığını bildiren Leyla Karaca’nın şikâyetidir. Bu, henüz doğrulanmamış bir iddiadır.",
@@ -200,6 +217,7 @@ const case001: CaseProfile = {
       icon: "account-search",
       title: "Benzer şikâyetleri ara",
       detail: "İkinci şikâyet kaydını ve Nermin’in görüşmesini araştır.",
+      isDone: (context) => context.hasEvidence("E06"),
       buildAction: () => ({ type: "search_similar_complaints" })
     },
     {
@@ -210,6 +228,7 @@ const case001: CaseProfile = {
           ? "Leyla’nın ödeme beyanıyla ilişkili iletişimi kontrol et."
           : "Ön koşul: Leyla’nın ayrıntılı ödeme beyanı.",
       disabled: (context) => !context.hasEvidence("E05"),
+      isDone: (context) => context.hasEvidence("E07"),
       buildAction: () => ({ type: "inspect_phone_messages" })
     },
     {
@@ -220,6 +239,7 @@ const case001: CaseProfile = {
           ? "İki şikâyetteki ortak ve farklı noktaları çıkar."
           : "Ön koşul: benzer şikâyet kaydını aç.",
       disabled: (context) => !context.hasEvidence("E06"),
+      isDone: (context) => context.hasEvidence("E08"),
       buildAction: () => ({ type: "compare_victim_statements" })
     }
   ],
@@ -232,6 +252,7 @@ const case001: CaseProfile = {
           ? "Gösteri alanı notu mevcut; kurgusal inceleme raporu istenebilir."
           : "Ön koşul: Leyla’yla gösteri hakkında görüş ve sahne notu.",
       disabled: (context) => !context.hasEvidence("E02"),
+      isDone: (context) => context.hasEvidence("E03"),
       buildAction: () => ({ type: "request_object_examination" })
     },
     {
@@ -242,6 +263,7 @@ const case001: CaseProfile = {
           ? "Mevcut dosyada bağımsız doğrulama sınırlarını incele."
           : "Ön koşul: ödeme beyanı ve mesaj incelemesi.",
       disabled: (context) => !context.hasEvidence("E05") || !context.hasEvidence("E07"),
+      isDone: (context) => context.hasEvidence("E10"),
       buildAction: () => ({ type: "cross_check_payment_claim" })
     }
   ],
@@ -260,6 +282,12 @@ const case002: CaseProfile = {
   workspaceEyebrow: "CASE-002 / SORUŞTURMA",
   mapHeading: "Portsmouth, Virginia",
   mapStamp: "DOSYA 002",
+  briefing: {
+    classification: "GİZLİ",
+    fileLabel: "İNCELEME DOSYASI",
+    assignedDetective: "Dedektif McDaniel",
+    firstStepHint: "Olay yeri özetini incele; giriş güzergâhı ve üst kat anlatımları bu adımdan açılır."
+  },
   briefingLabel: "BAŞLANGIÇ TUTANAĞI",
   briefingText:
     "Belgesel anlatımına göre 16 yaşındaki Megan Landowski’nin evinde öldürülmüş olarak bulunmasıyla başlayan soruşturma, ilk şüphelilerin DNA ile elenmesinin ardından okul çevresinden tanınan Robert Burns/Barns’a yönelir. Bu dosyadaki tüm olay, bulgu ve ifadeler yalnızca belgesel anlatımındaki iddialardır.",
@@ -277,6 +305,7 @@ const case002: CaseProfile = {
   disclaimer:
     "Bu paketteki olay, bulgu, ifade ve mahkûmiyet bilgileri yalnızca belgesel transkriptindeki iddialardır; bağımsız adli dosya, laboratuvar raporu veya mahkeme kaydı değildir. Kişi ve yer adlarındaki belirsizlikler korunmuştur. İçerik uyarısı: cinayet, cinsel şiddet ve reşit olmayan mağdur. Grafik ayrıntılar bilinçli olarak sınırlandırılmıştır.",
   startFeedback: "Dosya açıldı. Olay yeri anlatımı ve erişilebilir konumlar incelemeye hazır.",
+  interviewSourceNote: "İfade, belgesel kaydına dayanır; bağımsız laboratuvar veya mahkeme kaydı değildir.",
   evidenceNames: {
     E01: "Olay yeri: mutfak",
     E02: "Pencere ve giriş güzergâhı",

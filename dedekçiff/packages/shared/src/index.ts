@@ -99,6 +99,7 @@ export interface SessionState {
 export type PlayerAction =
   | { type: "load_case" }
   | { type: "visit_location"; locationId: Id }
+  | { type: "examine_location"; locationId: Id }
   | { type: "start_interview"; characterId: Id }
   | { type: "complete_interview"; characterId: Id; topic?: string | undefined }
   | { type: "ask_character"; characterId: Id; question: string; topic?: string | undefined }

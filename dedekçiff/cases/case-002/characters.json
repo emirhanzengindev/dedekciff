@@ -20,7 +20,7 @@
                                                "Diğer kişilerin özel konuşmaları",
                                                "Laboratuvar sonuçları"
                                            ],
-                           "initialStatement":  "Bu karakter belgeseldeki mağdurun arka plan özeti içindir; sorgulanamaz.",
+                           "initialStatement":  "Bu karakter mağdurun arka plan özeti içindir; sorgulanamaz.",
                            "truthPolicy":  "Mağdur oynanabilir değildir ve sorgulanamaz. Bu kayıt yalnızca belgesel anlatımındaki arka plan özetini yansıtır; yeni olgu üretilmez.",
                            "knowledgePolicy":  {
                                                    "answerOnlyFrom":  "unlocked_evidence_and_character_direct_knowledge",
@@ -52,7 +52,7 @@
                                                "Bağımsız olarak doğrulanmış adli bulgular",
                                                "Diğer kişilerin özel konuşmaları"
                                            ],
-                           "initialStatement":  "Belgesel anlatımına göre okul çevresinden tanınan bu kişi, başlangıçta kendisini evde uyuduğunu söylemiş; daha sonra maskeli bir saldırgan anlatımı aktarmıştır. Bu anlatımlar yalnızca belgesel iddiasıdır.",
+                           "initialStatement":  "Belgesel anlatımına göre okul çevresinden tanınan bu kişi, başlangıçta evde uyduğunu söyledi; sonradan maskeli bir saldırgan anlatısı aktardı. Bu iki anlatım üst kat bulgularıyla örtüşmüyor.",
                            "truthPolicy":  "Yalnızca belgesel transkriptindeki anlatımlar aktarılır; ad-soyad yazımı belirsizliği korunur. Anlatım ile bağımsız bulgu arasındaki çelişkiler açıkça belirtilir. Yeni mazeret veya delil icat edilmez.",
                            "topicAnswers":  {
                                                 "prior_acquaintance":  "Belgesel, Megan ile okul çevresinden eski bir tanışıklık anlatıldığını aktarır.",
@@ -84,7 +84,7 @@
                                                "Soruşturmanın diğer şüphelilere ilişkin bulguları",
                                                "Diğer kişilerin özel konuşmaları"
                                            ],
-                           "initialStatement":  "Belgesel anlatımına göre Megan\u0027ı tanıdığını söyleyen bu kişi, DNA karşılaştırmasıyla elenmiştir. Bu bilgi yalnızca belgesel iddiasıdır.",
+                           "initialStatement":  "Belgesel anlatımına göre Megan\u0027ı tanıdığını söyleyen bu kişi, DNA karşılaştırmasıyla elenmiştir.",
                            "truthPolicy":  "Yalnızca belgesel transkriptindeki anlatım aktarılır; elenme bilgisi bağımsız laboratuvar belgesi gibi sunulmaz.",
                            "knowledgePolicy":  {
                                                    "answerOnlyFrom":  "unlocked_evidence_and_character_direct_knowledge",
@@ -111,7 +111,7 @@
                                                "Soruşturmanın diğer bulguları",
                                                "Diğer kişilerin özel konuşmaları"
                                            ],
-                           "initialStatement":  "Belgesel anlatımına göre eve geldiğinde Megan\u0027ı bulan ve durumu bildiren bu kişi, DNA karşılaştırmasıyla elenmiştir. Bu bilgi yalnızca belgesel iddiasıdır.",
+                           "initialStatement":  "Belgesel anlatımına göre eve geldiğinde Megan\u0027ı bulan ve durumu bildiren bu kişi, DNA karşılaştırmasıyla elenmiştir.",
                            "truthPolicy":  "Yalnızca belgesel transkriptindeki anlatım aktarılır; elenme bilgisi bağımsız laboratuvar belgesi gibi sunulmaz.",
                            "knowledgePolicy":  {
                                                    "answerOnlyFrom":  "unlocked_evidence_and_character_direct_knowledge",
@@ -165,7 +165,7 @@
                                                "Kesinleşmiş motivasyon",
                                                "Diğer kişilerin özel konuşmaları"
                                            ],
-                           "initialStatement":  "Belgesel anlatımındaki soruşturmacı değerlendirmesine göre mağdur arka planı ve şüpheli ifadesi incelenmiştir. Ayrıntılar yalnızca belgesel iddiasıdır.",
+                           "initialStatement":  "Belgesel anlatımındaki soruşturmacı değerlendirmesine göre mağdur arka planı ve şüpheli ifadesi incelenmiştir.",
                            "truthPolicy":  "Yalnızca belgesel transkriptindeki anlatım aktarılır; değerlendirme kesin hüküm gibi sunulmaz.",
                            "knowledgePolicy":  {
                                                    "mayRevealOtherCharactersPrivateKnowledge":  false,
@@ -192,7 +192,7 @@
                                                "Olay yeri bulgularının ayrıntıları",
                                                "Diğer kişilerin özel konuşmaları"
                                            ],
-                           "initialStatement":  "Belgesel anlatımına göre Megan\u0027ın arkadaşı olan bu kişi, okul çevresi ve eski tanışıklıklar hakkında bilgi verir. Bu bilgi yalnızca belgesel iddiasıdır.",
+                           "initialStatement":  "Megan\u0027ın okuldan arkadaşıyım; okul çevresini ve eski tanışıklıkları anlatabilirim.",
                            "truthPolicy":  "Yalnızca belgesel transkriptindeki anlatım aktarılır; görmediği olaylar doğrulanmaz.",
                            "knowledgePolicy":  {
                                                    "mayRevealOtherCharactersPrivateKnowledge":  false,

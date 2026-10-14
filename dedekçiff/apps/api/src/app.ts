@@ -296,6 +296,12 @@ function serializeSession(caseData: CaseData, session: SessionState) {
       description: location.description,
       icon: location.icon
     })),
+    visitedLocationIds: session.actions
+      .filter((action) => action.startsWith("visited:"))
+      .map((action) => action.slice("visited:".length)),
+    examinedLocationIds: session.actions
+      .filter((action) => action.startsWith("examined:"))
+      .map((action) => action.slice("examined:".length)),
     interrogations: session.interrogations,
     updatedAt: session.updatedAt
   };

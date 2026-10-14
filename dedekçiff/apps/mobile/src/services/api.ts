@@ -26,6 +26,8 @@ export interface SessionDto {
   completedInterviews: Array<{ characterId: string; topic?: string }>;
   characters: Array<{ id: string; name: string; role: string; initialStatement: string }>;
   locations: Array<{ id: string; name: string; description: string; icon: string }>;
+  visitedLocationIds?: string[];
+  examinedLocationIds?: string[];
   interrogations: Array<{ characterId: string; startedAt: string; questionTopics: string[] }>;
 }
 

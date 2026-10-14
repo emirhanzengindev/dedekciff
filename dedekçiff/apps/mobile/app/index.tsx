@@ -3,8 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { FadeIn, FadeInDown, LinearTransition } from "react-native-reanimated";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CaseMap } from "../src/components/CaseMap";
@@ -22,7 +23,7 @@ import {
   type CaseSummaryDto,
   type SessionDto
 } from "../src/services/api";
-import { getCaseProfile, type ActionContext, type ActionSpec, type CaseProfile } from "../src/services/caseProfiles";
+import { getCaseProfile, type ActionContext, type ActionSpec, type CaseProfile, type IconName } from "../src/services/caseProfiles";
 import { useSessionStore } from "../src/stores/sessionStore";
 import { supabase } from "../src/services/supabase";
 import { colors } from "../src/theme/colors";
@@ -33,6 +34,25 @@ type QuestionForm = z.infer<typeof questionSchema>;
 type WorkspaceTab = "map" | "investigation" | "forensics" | "prosecution";
 type InteractionPayload = { type: string; locationId?: string; characterId?: string };
 type ConversationLine = { characterId: string; role: "player" | "character"; text: string; evidenceIds?: string[] };
+type QuestStepStatus = "done" | "active" | "locked";
+type QuestStep = { key: string; title: string; detail: string; status: QuestStepStatus; icon: IconName };
+
+const characterRoleLabels: Record<string, string> = {
+  complainant_victim: "Şikâyetçi",
+  second_victim: "İkinci mağdur",
+  witness: "Görgü tanığı",
+  friend_witness: "Tanık",
+  primary_suspect: "Şüpheli",
+  convicted_person_in_documentary: "Şüpheli",
+  initial_suspect_ruled_out: "Elendi",
+  family_member_ruled_out: "Elendi",
+  investigator: "Soruşturma ekibi",
+  prosecutor: "Savcılık"
+};
+
+function characterRoleLabel(role: string) {
+  return characterRoleLabels[role] ?? "Görüşülebilir kişi";
+}
 
 export default function InvestigationScreen() {
   const queryClient = useQueryClient();
@@ -227,6 +247,35 @@ export default function InvestigationScreen() {
   const resolveDetail = (detail: ActionSpec["detail"]) => (typeof detail === "function" ? detail(actionContext) : detail);
   const isDisabled = (spec: ActionSpec) => spec.disabled?.(actionContext) ?? false;
 
+  // Quest panel: driven only by server-verified evidence in the session DTO.
+  const questSteps: QuestStep[] = [
+    ...profile.investigationActions.map((spec, index) => ({
+      key: `investigation-${index}`,
+      title: spec.title,
+      detail: resolveDetail(spec.detail),
+      status: (spec.isDone?.(actionContext) ? "done" : isDisabled(spec) ? "locked" : "active") as QuestStepStatus,
+      icon: spec.icon
+    })),
+    {
+      key: "suspect-interrogation",
+      title: `${profile.suspect.displayName} sorgusunu tamamla`,
+      detail: suspectInterviewDone
+        ? `${profile.suspect.doneEvidenceId} şüpheli ifade tutanağı dosyaya eklendi.`
+        : profile.suspect.finishRequirementText,
+      status: (suspectInterviewDone ? "done" : suspectAvailable ? "active" : "locked") as QuestStepStatus,
+      icon: "account-alert-outline"
+    },
+    {
+      key: "prosecution",
+      title: "Dosyayı savcılığa sun",
+      detail: prosecutionResult
+        ? prosecutionOutcome(prosecutionResult.outcome)
+        : "Eriştiğin delillerle sunulan başvuru deterministik kurallarla değerlendirilir.",
+      status: (prosecutionResult ? "done" : suspectInterviewDone ? "active" : "locked") as QuestStepStatus,
+      icon: "scale-balance"
+    }
+  ];
+
   if (!authReady || !hasHydrated) {
     return (
       <SafeAreaView style={styles.safe}>
@@ -254,16 +303,39 @@ export default function InvestigationScreen() {
   }
 
   if (!session) {
+    const briefingCover = {
+      classification: profile.briefing?.classification ?? "GİZLİ",
+      fileLabel: profile.briefing?.fileLabel ?? "İNCELEME DOSYASI",
+      assignedDetective: profile.briefing?.assignedDetective ?? "Dedektif McDaniel",
+      firstStepHint:
+        profile.briefing?.firstStepHint ??
+        profile.investigationActions[0]?.title ??
+        "Dosyayı inceleyerek başla."
+    };
     return (
       <SafeAreaView style={styles.safe}>
         <ScrollView contentContainerStyle={styles.briefingScreen}>
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.eyebrow}>{profile.eyebrow}</Text>
-              <Text style={styles.title}>{profile.title}</Text>
+          <Animated.View entering={FadeIn.duration(420)} style={styles.briefingCover}>
+            <View style={styles.coverTopRow}>
+              <View style={styles.classificationStamp}>
+                <Text style={styles.classificationStampText}>{briefingCover.classification}</Text>
+              </View>
+              <MaterialCommunityIcons name="police-badge-outline" color={colors.accent} size={22} />
+              {supabase && authSession ? <SignOutButton onPress={() => { void supabase?.auth.signOut(); clearSessionId(); }} /> : null}
             </View>
-            {supabase && authSession ? <SignOutButton onPress={() => { void supabase?.auth.signOut(); clearSessionId(); }} /> : null}
-          </View>
+            <Text style={styles.coverFileLabel}>{briefingCover.fileLabel}</Text>
+            <Text style={styles.eyebrow}>{profile.eyebrow}</Text>
+            <Text style={styles.title}>{profile.title}</Text>
+            <View style={styles.coverDivider} />
+            <View style={styles.coverMetaRow}>
+              <MaterialCommunityIcons name="account-tie-outline" color={colors.muted} size={16} />
+              <Text style={styles.coverMetaText}>Atanan dedektif: {briefingCover.assignedDetective}</Text>
+            </View>
+            <View style={styles.coverMetaRow}>
+              <MaterialCommunityIcons name="map-marker-radius-outline" color={colors.muted} size={16} />
+              <Text style={styles.coverMetaText}>İlk saha: {profile.mapHeading}</Text>
+            </View>
+          </Animated.View>
 
           <SectionHeading title="Vaka seçimi" detail="Sunucuda yüklü vaka paketlerinden birini seç." />
           <View style={styles.actionList}>
@@ -283,15 +355,25 @@ export default function InvestigationScreen() {
             })}
           </View>
 
-          <View style={styles.briefingLead}>
+          <Animated.View entering={FadeInDown.delay(120).duration(420)} style={styles.briefingLead}>
             <MaterialCommunityIcons name="folder-search" color={colors.accent} size={25} />
             <Text style={styles.briefingLabel}>{profile.briefingLabel}</Text>
             <Text style={styles.briefingText}>{profile.briefingText}</Text>
-          </View>
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(200).duration(420)} style={styles.startGuidance}>
+            <MaterialCommunityIcons name="compass-outline" color={colors.accent} size={20} />
+            <View style={styles.startGuidanceCopy}>
+              <Text style={styles.briefingLabel}>İLK ADIM</Text>
+              <Text style={styles.statementText}>{briefingCover.firstStepHint}</Text>
+            </View>
+          </Animated.View>
 
           {profile.statements.length ? <Text style={styles.sectionTitle}>Dosyadaki ilk beyanlar</Text> : null}
           {profile.statements.map((statement, index) => (
-            <StatementCard key={`${statement.name}-${index}`} name={statement.name} text={statement.text} note={statement.note} />
+            <Animated.View key={`${statement.name}-${index}`} entering={FadeInDown.delay(240 + index * 70).duration(420)}>
+              <StatementCard name={statement.name} text={statement.text} note={statement.note} />
+            </Animated.View>
           ))}
 
           <View style={styles.disclaimer}>
@@ -302,7 +384,7 @@ export default function InvestigationScreen() {
           {feedback ? <FeedbackBanner text={feedback} onDismiss={() => setFeedback(undefined)} /> : null}
           <Pressable testID="start-case" accessibilityRole="button" disabled={startMutation.isPending} style={[styles.startButton, startMutation.isPending && styles.disabled]} onPress={() => startMutation.mutate(selectedCaseId ?? DEFAULT_CASE_ID)}>
             <MaterialCommunityIcons name="folder-open" color={colors.background} size={20} />
-            <Text style={styles.startButtonText}>{startMutation.isPending ? "Dosya hazırlanıyor..." : "Dosyayı al ve haritayı aç"}</Text>
+            <Text style={styles.startButtonText}>{startMutation.isPending ? "Dosya hazırlanıyor..." : "Soruşturmayı Başlat"}</Text>
           </Pressable>
         </ScrollView>
       </SafeAreaView>
@@ -318,7 +400,12 @@ export default function InvestigationScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.workspace}>
+      <KeyboardAvoidingView
+        style={styles.safe}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
+      >
+        <View style={styles.workspace}>
         <View style={styles.workspaceHeader}>
           <View style={styles.headerTitleBlock}>
             <Text style={styles.eyebrow}>{profile.workspaceEyebrow}</Text>
@@ -383,7 +470,8 @@ export default function InvestigationScreen() {
         ) : null}
 
         {activeTab === "investigation" ? (
-          <ScrollView contentContainerStyle={styles.areaScroll}>
+          <ScrollView contentContainerStyle={styles.areaScroll} keyboardShouldPersistTaps="handled">
+            <QuestPanel steps={questSteps} />
             <SectionHeading title="Soruşturma" detail="Her işlem dosyaya kaydedilir; yeni deliller haritadaki erişimi etkiler." />
             <View style={styles.actionList}>
               {profile.investigationActions.map((spec) => (
@@ -428,15 +516,24 @@ export default function InvestigationScreen() {
             <SectionHeading title="Karakter görüşmesi" detail="Soru serbest metin; yanıt ve delil erişimi sunucu kurallarınca belirlenir." />
             <View style={styles.characterChoices}>
               {session.characters.map((character) => (
-                <Pressable key={character.id} onPress={() => setActiveCharacterId(character.id)} style={[styles.characterChoice, activeCharacterId === character.id && styles.characterChoiceActive]}>
+                <Pressable
+                  key={character.id}
+                  onPress={() => setActiveCharacterId(character.id)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: activeCharacterId === character.id }}
+                  style={[styles.characterChoice, activeCharacterId === character.id && styles.characterChoiceActive]}
+                >
                   <Text style={[styles.characterChoiceText, activeCharacterId === character.id && styles.characterChoiceTextActive]}>{character.name}</Text>
+                  <Text style={[styles.characterRoleTag, activeCharacterId === character.id && styles.characterRoleTagActive]}>{characterRoleLabel(character.role)}</Text>
                 </Pressable>
               ))}
             </View>
+            <Text style={styles.discoveryNote}>Görüşülen kişi ve ifade sayısı arttıkça yeni tanıklar bu listeye düşer.</Text>
             {activeCharacter ? (
-              <View style={styles.interviewPanel}>
+              <Animated.View entering={FadeInDown.duration(260)} layout={LinearTransition.springify()} key={activeCharacter.id} style={styles.interviewPanel}>
                 <Text style={styles.panelTitle}>{activeCharacter.name}</Text>
                 <Text style={styles.statementText}>{activeCharacter.initialStatement}</Text>
+                {profile.interviewSourceNote ? <Text style={styles.statementNote}>{profile.interviewSourceNote}</Text> : null}
                 {activeCharacter.id === suspectCharacterId ? (
                   <View style={styles.interrogationPanel}>
                     {!suspectInterrogation ? (
@@ -463,11 +560,11 @@ export default function InvestigationScreen() {
                   </View>
                 ) : null}
                 {conversation.filter((line) => line.characterId === activeCharacter.id).map((line, index) => (
-                  <View key={`${line.role}-${index}`} style={[styles.chatLine, line.role === "player" ? styles.playerLine : styles.characterLine]}>
+                  <Animated.View entering={FadeInDown.duration(220)} key={`${line.role}-${index}`} style={[styles.chatLine, line.role === "player" ? styles.playerLine : styles.characterLine]}>
                     <Text style={styles.chatRole}>{line.role === "player" ? "DEDEKTİF" : activeCharacter.name.toLocaleUpperCase("tr-TR")}</Text>
                     <Text style={styles.chatText}>{line.text}</Text>
                     {line.evidenceIds?.length ? <Text style={styles.chatEvidence}>Dayanak: {line.evidenceIds.join(", ")}</Text> : null}
-                  </View>
+                  </Animated.View>
                 ))}
                 <Controller
                   control={questionForm.control}
@@ -482,6 +579,8 @@ export default function InvestigationScreen() {
                       placeholder={activeCharacter.id === suspectCharacterId && !suspectInterrogation ? "Önce sorguyu başlat" : "Örn. Olay günü ne oldu?"}
                       placeholderTextColor={colors.muted}
                       multiline
+                      returnKeyType="send"
+                      blurOnSubmit={false}
                     />
                   )}
                 />
@@ -498,7 +597,7 @@ export default function InvestigationScreen() {
                   <MaterialCommunityIcons name={questionMutation.isPending ? "timer-sand" : "send"} color={colors.background} size={18} />
                   <Text style={styles.primaryText}>{questionMutation.isPending ? "Yanıt bekleniyor..." : "Soruyu ilet"}</Text>
                 </Pressable>
-              </View>
+              </Animated.View>
             ) : <EmptyState icon="account-lock-outline" title="Henüz görüşülebilir kişi yok" detail="Yeni ifadeler dosyaya girdikçe karakterler açılır." />}
           </ScrollView>
         ) : null}
@@ -551,7 +650,8 @@ export default function InvestigationScreen() {
             ) : null}
           </ScrollView>
         ) : null}
-      </View>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -601,6 +701,43 @@ function SectionHeading({ title, detail }: { title: string; detail: string }) {
   );
 }
 
+function QuestPanel({ steps }: { steps: QuestStep[] }) {
+  const doneCount = steps.filter((step) => step.status === "done").length;
+  const activeStep = steps.find((step) => step.status === "active");
+  return (
+    <Animated.View entering={FadeInDown.duration(280)} style={styles.questPanel}>
+      <View style={styles.questHeaderRow}>
+        <Text style={styles.panelTitle}>Soruştırma defteri</Text>
+        <Text style={styles.questProgressText}>{doneCount}/{steps.length} adım</Text>
+      </View>
+      <View style={styles.questProgressBar}>
+        <View style={[styles.questProgressFill, { width: `${Math.round((doneCount / Math.max(1, steps.length)) * 100)}%` }]} />
+      </View>
+      {activeStep ? <Text style={styles.questActiveHint}>Sıradaki: {activeStep.title}</Text> : null}
+      {steps.map((step, index) => (
+        <Animated.View
+          key={step.key}
+          entering={FadeInDown.delay(60 + index * 45).duration(260)}
+          layout={LinearTransition.springify().damping(18)}
+          style={[styles.questRow, step.status === "locked" && styles.questRowLocked]}
+        >
+          <View style={[styles.questIconWrap, step.status === "done" && styles.questIconDone]}>
+            <MaterialCommunityIcons
+              name={step.status === "done" ? "check" : step.status === "locked" ? "lock-outline" : step.icon}
+              color={step.status === "done" ? colors.background : step.status === "locked" ? colors.muted : colors.accent}
+              size={15}
+            />
+          </View>
+          <View style={styles.questRowCopy}>
+            <Text style={[styles.questRowTitle, step.status === "done" && styles.questRowDone, step.status === "locked" && styles.questRowMuted]}>{step.title}</Text>
+            <Text style={styles.questRowDetail}>{step.detail}</Text>
+          </View>
+        </Animated.View>
+      ))}
+    </Animated.View>
+  );
+}
+
 function ActionButton({
   icon,
   title,
@@ -617,7 +754,16 @@ function ActionButton({
   onPress: () => void;
 }) {
   return (
-    <Pressable accessibilityRole="button" disabled={disabled || busy} onPress={onPress} style={[styles.actionButton, (disabled || busy) && styles.actionButtonDisabled]}>
+    <Pressable
+      accessibilityRole="button"
+      disabled={disabled || busy}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.actionButton,
+        (disabled || busy) && styles.actionButtonDisabled,
+        pressed && !disabled && styles.pressed
+      ]}
+    >
       <View style={styles.actionIcon}><MaterialCommunityIcons name={icon} color={disabled ? colors.muted : colors.accent} size={21} /></View>
       <View style={styles.actionCopy}>
         <Text style={[styles.actionTitle, disabled && styles.disabledText]}>{busy ? "İşleniyor..." : title}</Text>
@@ -640,14 +786,14 @@ function StatementCard({ name, text, note }: { name: string; text: string; note?
 
 function EvidenceCard({ id, name, fact, limitation }: { id: string; name: string; fact: string; limitation?: string }) {
   return (
-    <View style={styles.evidenceCard}>
+    <Animated.View entering={FadeInDown.duration(260)} layout={LinearTransition.springify().damping(18)} style={styles.evidenceCard}>
       <View style={styles.evidenceHeader}>
         <Text style={styles.evidenceId}>{id}</Text>
         <Text style={styles.evidenceName}>{name}</Text>
       </View>
       <Text style={styles.statementText}>{fact}</Text>
       {limitation ? <Text style={styles.evidenceLimit}>{limitation}</Text> : null}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -763,5 +909,34 @@ const styles = StyleSheet.create({
   evidenceName: { color: colors.text, flex: 1, fontSize: 13, fontWeight: "700" },
   evidenceLimit: { borderLeftColor: colors.accentDeep, borderLeftWidth: 2, color: colors.muted, fontSize: 11, lineHeight: 16, paddingLeft: 8 },
   loadingState: { alignItems: "center", flex: 1, gap: 13, justifyContent: "center", padding: 22 },
-  emptyState: { alignItems: "center", backgroundColor: colors.panel, borderColor: colors.line, borderRadius: 8, borderWidth: 1, gap: 8, padding: 20 }
+  emptyState: { alignItems: "center", backgroundColor: colors.panel, borderColor: colors.line, borderRadius: 8, borderWidth: 1, gap: 8, padding: 20 },
+  pressed: { opacity: 0.78 },
+  briefingCover: { backgroundColor: colors.panel, borderColor: colors.line, borderLeftColor: colors.accent, borderRadius: 10, borderWidth: 1, gap: 7, padding: 18 },
+  coverTopRow: { alignItems: "center", flexDirection: "row", gap: 10, justifyContent: "space-between" },
+  classificationStamp: { backgroundColor: colors.accentDeep, borderColor: colors.accent, borderRadius: 4, borderWidth: 1, paddingHorizontal: 9, paddingVertical: 3 },
+  classificationStampText: { color: colors.text, fontSize: 11, fontWeight: "800", letterSpacing: 2 },
+  coverFileLabel: { color: colors.muted, fontSize: 11, fontWeight: "700", letterSpacing: 1.5, marginTop: 6 },
+  coverDivider: { backgroundColor: colors.line, height: 1, marginVertical: 4 },
+  coverMetaRow: { alignItems: "center", flexDirection: "row", gap: 7 },
+  coverMetaText: { color: colors.muted, fontSize: 12, fontWeight: "600" },
+  startGuidance: { alignItems: "flex-start", backgroundColor: colors.panelAlt, borderColor: colors.line, borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 10, padding: 13 },
+  startGuidanceCopy: { flex: 1, gap: 3 },
+  questPanel: { backgroundColor: colors.panel, borderColor: colors.line, borderRadius: 8, borderWidth: 1, gap: 9, padding: 12 },
+  questHeaderRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  questProgressText: { color: colors.accent, fontSize: 11, fontWeight: "800" },
+  questProgressBar: { backgroundColor: colors.panelAlt, borderRadius: 3, height: 5, overflow: "hidden" },
+  questProgressFill: { backgroundColor: colors.accent, borderRadius: 3, height: 5 },
+  questActiveHint: { color: colors.text, fontSize: 11, fontStyle: "italic", fontWeight: "600" },
+  questRow: { alignItems: "flex-start", backgroundColor: colors.panelAlt, borderRadius: 6, borderWidth: 1, borderColor: colors.line, flexDirection: "row", gap: 9, padding: 9 },
+  questRowLocked: { opacity: 0.62 },
+  questIconWrap: { alignItems: "center", backgroundColor: colors.background, borderColor: colors.accent, borderRadius: 11, borderWidth: 1, height: 22, justifyContent: "center", width: 22 },
+  questIconDone: { backgroundColor: colors.ok, borderColor: colors.ok },
+  questRowCopy: { flex: 1, gap: 2 },
+  questRowTitle: { color: colors.text, fontSize: 12, fontWeight: "800" },
+  questRowDone: { color: colors.muted, textDecorationLine: "line-through" },
+  questRowMuted: { color: colors.muted },
+  questRowDetail: { color: colors.muted, fontSize: 11, lineHeight: 15 },
+  characterRoleTag: { color: colors.muted, fontSize: 9, fontWeight: "800", letterSpacing: 0.4, marginTop: 2, textTransform: "uppercase" },
+  characterRoleTagActive: { color: colors.accent },
+  discoveryNote: { color: colors.muted, fontSize: 11, fontStyle: "italic", lineHeight: 16 }
 });

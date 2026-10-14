@@ -221,4 +221,78 @@ describe("api", () => {
     expect(result.newlyUnlockedEvidenceIds).toContain("E04");
     expect(result.session.locations.map((location) => location.id)).toContain("suspect_home");
   });
+
+  it("keeps visiting and inspecting separate and lets only explicit examination advance case-002", async () => {
+    const app = await buildApp();
+    const created = await app.inject({ method: "POST", url: "/api/sessions", payload: { caseId: "case-002" } });
+    const session = created.json() as { id: string; unlockedEvidenceIds: string[]; visitedLocationIds?: string[]; examinedLocationIds?: string[] };
+    expect(session.unlockedEvidenceIds).toEqual(["E01"]);
+    expect(session.visitedLocationIds ?? []).toEqual([]);
+
+    const visit = await app.inject({
+      method: "POST",
+      url: `/api/sessions/${session.id}/interactions`,
+      payload: { type: "visit_location", locationId: "LOC-kitchen" }
+    });
+    const visitResult = visit.json() as { newlyUnlockedEvidenceIds: string[]; session: { visitedLocationIds: string[]; examinedLocationIds: string[]; unlockedEvidenceIds: string[] } };
+    expect(visit.statusCode).toBe(200);
+    expect(visitResult.newlyUnlockedEvidenceIds).toEqual([]);
+    expect(visitResult.session.visitedLocationIds).toContain("LOC-kitchen");
+    expect(visitResult.session.examinedLocationIds).toEqual([]);
+    expect(visitResult.session.unlockedEvidenceIds).toEqual(["E01"]);
+
+    const earlyExamine = await app.inject({
+      method: "POST",
+      url: `/api/sessions/${session.id}/interactions`,
+      payload: { type: "examine_location", locationId: "LOC-window" }
+    });
+    expect(earlyExamine.statusCode).toBe(403);
+    expect(earlyExamine.json()).toMatchObject({ error: "location_locked_or_unknown" });
+
+    const examine = await app.inject({
+      method: "POST",
+      url: `/api/sessions/${session.id}/interactions`,
+      payload: { type: "examine_location", locationId: "LOC-kitchen" }
+    });
+    const examineResult = examine.json() as { newlyUnlockedEvidenceIds: string[]; session: { examinedLocationIds: string[]; unlockedEvidenceIds: string[] } };
+    expect(examine.statusCode).toBe(200);
+    expect([...examineResult.newlyUnlockedEvidenceIds].sort()).toEqual(["E02", "E03", "E04", "E05"]);
+    expect(examineResult.session.examinedLocationIds).toContain("LOC-kitchen");
+  });
+
+  it("does not let conversation alone advance the case-002 evidence chain", async () => {
+    const app = await buildApp();
+    const created = await app.inject({ method: "POST", url: "/api/sessions", payload: { caseId: "case-002" } });
+    const session = created.json() as { id: string };
+
+    const started = await app.inject({
+      method: "POST",
+      url: `/api/sessions/${session.id}/interactions`,
+      payload: { type: "start_interview", characterId: "char-heather" }
+    });
+    expect(started.statusCode).toBe(200);
+
+    const asked = await app.inject({
+      method: "POST",
+      url: `/api/sessions/${session.id}/questions`,
+      payload: { characterId: "char-heather", question: "Megan'la nasÄ±l tanÄ±ÅŸtÄ±n?" }
+    });
+    const result = asked.json() as { session: { unlockedEvidenceIds: string[] } };
+    expect(asked.statusCode).toBe(200);
+    expect(result.session.unlockedEvidenceIds).toEqual(["E01"]);
+  });
+
+  it("rejects an unknown interaction payload", async () => {
+    const app = await buildApp();
+    const created = await app.inject({ method: "POST", url: "/api/sessions", payload: { caseId: "case-001" } });
+    const session = created.json() as { id: string };
+    const response = await app.inject({
+      method: "POST",
+      url: `/api/sessions/${session.id}/interactions`,
+      payload: { type: "examine_location" }
+    });
+    expect(response.statusCode).toBeGreaterThanOrEqual(400);
+    const after = await app.inject({ method: "GET", url: `/api/sessions/${session.id}` });
+    expect((after.json() as { unlockedEvidenceIds: string[] }).unlockedEvidenceIds).toEqual(["E01"]);
+  });
 });

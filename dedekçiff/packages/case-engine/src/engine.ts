@@ -16,6 +16,32 @@ import type {
 
 type IntentPattern = { intent: string; regex: RegExp };
 
+// Evidence unlocked only by accumulated prerequisites (pure `evidenceIds`
+// conditions) advances exclusively through explicit investigation actions.
+// Passive actions (visiting a location, chatting, starting an interview)
+// record progress but never discover evidence on their own.
+const CHAIN_ADVANCE_ACTION_TYPES = new Set<string>([
+  "load_case",
+  "examine_location",
+  "search_similar_complaints",
+  "request_object_examination",
+  "inspect_phone_messages",
+  "compare_victim_statements",
+  "interview_suspect",
+  "cross_check_payment_claim"
+]);
+
+function isManualStepCondition(condition: UnlockCondition | null): boolean {
+  if (condition === null) return false;
+  return Boolean(
+    condition.action ||
+    condition.event ||
+    condition.characterId ||
+    condition.interviewCompleted ||
+    condition.questionTopic
+  );
+}
+
 const intentPatternCache = new WeakMap<CaseData, IntentPattern[]>();
 
 function compiledIntentPatterns(caseData: CaseData): IntentPattern[] {
@@ -122,10 +148,12 @@ export function applyPlayerAction(
   // cascade would short-circuit stage-gated unlock progressions, so only a
   // single generation runs here and newly unlocked evidence does not chain.
   const referenceSession = { ...next, unlockedEvidenceIds: [...before] };
+  const advanceChain = CHAIN_ADVANCE_ACTION_TYPES.has(action.type);
   for (const evidence of caseData.evidence) {
-    if (!next.unlockedEvidenceIds.includes(evidence.id) && conditionSatisfied(evidence.unlockCondition, referenceSession)) {
-      next = appendUniqueEvidence(next, evidence.id);
-    }
+    if (next.unlockedEvidenceIds.includes(evidence.id)) continue;
+    if (!conditionSatisfied(evidence.unlockCondition, referenceSession)) continue;
+    if (!advanceChain && !isManualStepCondition(evidence.unlockCondition)) continue;
+    next = appendUniqueEvidence(next, evidence.id);
   }
 
   const newlyUnlockedEvidenceIds = next.unlockedEvidenceIds.filter((id) => !before.has(id));
@@ -548,6 +576,9 @@ function addActionMarkers(caseData: CaseData, session: SessionState, action: Pla
     case "visit_location":
       actions.add(`visited:${action.locationId}`);
       break;
+    case "examine_location":
+      actions.add(`examined:${action.locationId}`);
+      break;
     case "start_interview":
       actions.add(`interview_started:${action.characterId}`);
       if (!interrogations.some((interrogation) => interrogation.characterId === action.characterId)) {
@@ -586,6 +617,14 @@ function addActionMarkers(caseData: CaseData, session: SessionState, action: Pla
 function firstDeniedReason(caseData: CaseData, session: SessionState, action: PlayerAction): string | undefined {
   if (action.type === "visit_location" && !getVisibleLocations(caseData, session).some((location) => location.id === action.locationId)) {
     return "location_locked_or_unknown";
+  }
+  if (action.type === "examine_location") {
+    if (!getVisibleLocations(caseData, session).some((location) => location.id === action.locationId)) {
+      return "location_locked_or_unknown";
+    }
+    if (!session.actions.includes(`visited:${action.locationId}`)) {
+      return "location_not_visited";
+    }
   }
   if (
     (action.type === "ask_character" || action.type === "complete_interview" || action.type === "start_interview") &&
